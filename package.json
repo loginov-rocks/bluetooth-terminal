@@ -1,0 +1,24 @@
+{
+  "name": "bluetooth-terminal",
+  "version": "1.0.0",
+  "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
+  "keywords": [
+    "serial",
+    "communication",
+    "bluetooth",
+    "ble",
+    "smart",
+    "iot"
+  ],
+  "main": "BluetoothTerminal.js",
+  "homepage": "https://github.com/1oginov/bluetooth-terminal",
+  "bugs": {
+    "url": "https://github.com/1oginov/bluetooth-terminal/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1oginov/bluetooth-terminal.git"
+  },
+  "license": "MIT",
+  "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks/)"
+}
