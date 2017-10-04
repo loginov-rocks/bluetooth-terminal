@@ -1,9 +1,9 @@
 /**
- * Bluetooth Terminal class
+ * Bluetooth Terminal class.
  */
 class BluetoothTerminal {
   /**
-   * Create preconfigured Bluetooth Terminal instance
+   * Create preconfigured Bluetooth Terminal instance.
    *
    * @param {!(number|string)} [serviceUuid=0xFFE0] - Service UUID
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
@@ -33,7 +33,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set number or string representing service UUID used
+   * Set number or string representing service UUID used.
    *
    * @param {!(number|string)} uuid - Service UUID
    */
@@ -51,7 +51,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set number or string representing characteristic UUID used
+   * Set number or string representing characteristic UUID used.
    *
    * @param {!(number|string)} uuid - Characteristic UUID
    */
@@ -70,7 +70,7 @@ class BluetoothTerminal {
 
   /**
    * Set character representing separator for data coming from the connected
-   * device, end of line for example
+   * device, end of line for example.
    *
    * @param {string} separator - Receive separator with length equal to one
    *                             character
@@ -89,7 +89,7 @@ class BluetoothTerminal {
 
   /**
    * Set string representing separator for data coming to the connected
-   * device, end of line for example
+   * device, end of line for example.
    *
    * @param {string} separator - Send separator
    */
@@ -106,7 +106,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set delay between chunks of long data sending
+   * Set delay between chunks of long data sending.
    *
    * @param {!number} delay - Delay in milliseconds
    */
@@ -123,7 +123,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Launch Bluetooth device chooser and connect to the selected device
+   * Launch Bluetooth device chooser and connect to the selected device.
    *
    * @returns {Promise} Promise which will be fulfilled when notifications will
    *                    be started or rejected if something went wrong
@@ -133,7 +133,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Disconnect from the connected device
+   * Disconnect from the connected device.
    */
   disconnect() {
     this._disconnectFromDevice(this._device);
@@ -148,7 +148,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Send data to the connected device
+   * Send data to the connected device.
    *
    * @param {string} data - Data
    *
@@ -203,7 +203,7 @@ class BluetoothTerminal {
 
   /**
    * Data receiving handler which called whenever the new data comes from
-   * the connected device, override this to handle incoming data
+   * the connected device, override it to handle incoming data.
    *
    * @param {string} data - Data
    */
@@ -212,7 +212,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Get the connected device name
+   * Get the connected device name.
    *
    * @returns {string} Device name or empty string if not connected
    */
