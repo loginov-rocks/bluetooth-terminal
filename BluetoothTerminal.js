@@ -1,66 +1,133 @@
 /**
- * BluetoothTerminal class
+ * Bluetooth Terminal class
  */
 class BluetoothTerminal {
   /**
-   * Constructor
+   * Create preconfigured Bluetooth Terminal instance
    *
-   * @param {number} serviceUuid Service UUID
-   * @param {number} characteristicUuid Characteristic UUID
+   * @param {!(number|string)} [serviceUuid=0xFFE0] - Service UUID
+   * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
+   * @param {string} [receiveSeparator='\n'] - Receive separator
+   * @param {string} [sendSeparator='\n'] - Send separator
+   * @param {!number} [writeToCharacteristicDelay=100] - Delay
    */
-  constructor(serviceUuid, characteristicUuid) {
-    /**
-     * String representing end of line for output data
-     * @type {string}
-     * @private
-     */
-    this._writeEol = '\n';
-
-    /**
-     * Character representing end of line for input data
-     * @type {string}
-     * @private
-     */
-    this._readEol = '\n';
-
-    /**
-     * Buffer containing not ended input data
-     * @type {string}
-     * @private
-     */
-    this._readBuffer = '';
-
-    /**
-     * Max characteristic value length
-     * @type {number}
-     * @private
-     */
-    this._maxCharacteristicValueLength = 20;
-
-    /**
-     * Write to characteristic delay
-     * @type {number}
-     * @private
-     */
-    this._writeToCharacteristicDelay = 100;
-
-    this._device = null; // device object cache
-    this._characteristic = null; // characteristic object cache
+  constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
+              receiveSeparator = '\n', sendSeparator = '\n',
+              writeToCharacteristicDelay = 100) {
+    // Used private variables
+    this._receiveBuffer = '';                // Buffer containing not separated data
+    this._maxCharacteristicValueLength = 20; // Max characteristic value length
+    this._device = null;                     // Device object cache
+    this._characteristic = null;             // Characteristic object cache
 
     // Bound functions used to add and remove appropriate event handlers
     this._boundHandleDisconnection = this._handleDisconnection.bind(this);
     this._boundHandleCharacteristicValueChanged =
         this._handleCharacteristicValueChanged.bind(this);
 
-    this._serviceUuid = serviceUuid;
-    this._characteristicUuid = characteristicUuid;
+    // Configure with specified parameters
+    this.setServiceUuid(serviceUuid);
+    this.setCharacteristicUuid(characteristicUuid);
+    this.setReceiveSeparator(receiveSeparator);
+    this.setSendSeparator(sendSeparator);
+    this.setWriteToCharacteristicDelay(writeToCharacteristicDelay);
   }
 
   /**
-   * Launch bluetooth device selector and connect to the selected device
+   * Set number or string representing service UUID used
+   *
+   * @param {!(number|string)} uuid - Service UUID
+   */
+  setServiceUuid(uuid) {
+    if (!Number.isInteger(uuid) &&
+        !(typeof uuid === 'string' || uuid instanceof String)) {
+      throw 'UUID type is neither a number nor a string';
+    }
+
+    if (!uuid) {
+      throw 'UUID cannot be a null';
+    }
+
+    this._serviceUuid = uuid;
+  }
+
+  /**
+   * Set number or string representing characteristic UUID used
+   *
+   * @param {!(number|string)} uuid - Characteristic UUID
+   */
+  setCharacteristicUuid(uuid) {
+    if (!Number.isInteger(uuid) &&
+        !(typeof uuid === 'string' || uuid instanceof String)) {
+      throw 'UUID type is neither a number nor a string';
+    }
+
+    if (!uuid) {
+      throw 'UUID cannot be a null';
+    }
+
+    this._characteristicUuid = uuid;
+  }
+
+  /**
+   * Set character representing separator for data coming from the connected
+   * device, end of line for example
+   *
+   * @param {string} separator - Receive separator with length equal to one
+   *                             character
+   */
+  setReceiveSeparator(separator) {
+    if (!(typeof separator === 'string' || separator instanceof String)) {
+      throw 'Separator type is not a string';
+    }
+
+    if (separator.length !== 1) {
+      throw 'Separator length must be equal to one character';
+    }
+
+    this._receiveSeparator = separator;
+  }
+
+  /**
+   * Set string representing separator for data coming to the connected
+   * device, end of line for example
+   *
+   * @param {string} separator - Send separator
+   */
+  setSendSeparator(separator) {
+    if (!(typeof separator === 'string' || separator instanceof String)) {
+      throw 'Separator type is not a string';
+    }
+
+    if (separator.length !== 1) {
+      throw 'Separator length must be equal to one character';
+    }
+
+    this._sendSeparator = separator;
+  }
+
+  /**
+   * Set delay between values writings to the characteristic
+   *
+   * @param {!number} delay - Delay in milliseconds
+   */
+  setWriteToCharacteristicDelay(delay) {
+    if (!Number.isInteger(delay)) {
+      throw 'Delay type is not a number';
+    }
+
+    if (delay <= 0) {
+      throw 'Delay must be more than a null';
+    }
+
+    this._writeToCharacteristicDelay = delay;
+  }
+
+  /**
+   * Launch Bluetooth device chooser and connect to the selected device
    *
    * @returns {Promise} Promise which will be fulfilled when notifications will
-   *                    be started
+   *                    be started or rejected if something went wrong
    */
   connect() {
     return this._connectToDevice(this._device);
@@ -84,8 +151,10 @@ class BluetoothTerminal {
   /**
    * Send data to the connected device
    *
-   * @param {string} data Data
-   * @returns {boolean} Is sent
+   * @param {string} data - Data
+   *
+   * @returns {boolean} True if sent, false if there is no data or device
+   *                    connected
    */
   send(data) {
     data = String(data);
@@ -94,7 +163,7 @@ class BluetoothTerminal {
       return false;
     }
 
-    data += this._writeEol;
+    data += this._sendSeparator;
 
     if (data.length > this._maxCharacteristicValueLength) {
       let chunks = this.constructor._splitByLength(data,
@@ -119,7 +188,7 @@ class BluetoothTerminal {
    * Data receiving handler which called whenever the new data comes from
    * the connected device, override this to handle incoming data
    *
-   * @param {string} data Data
+   * @param {string} data - Data
    */
   receive(data) {
     // Handle incoming data
@@ -128,7 +197,7 @@ class BluetoothTerminal {
   /**
    * Get the connected device name
    *
-   * @returns {string}
+   * @returns {string} Device name or empty string if not connected
    */
   getDeviceName() {
     if (!this._device) {
@@ -249,16 +318,16 @@ class BluetoothTerminal {
     let value = new TextDecoder().decode(event.target.value);
 
     for (let c of value) {
-      if (c === this._readEol) {
-        let data = this._readBuffer.trim();
-        this._readBuffer = '';
+      if (c === this._receiveSeparator) {
+        let data = this._receiveBuffer.trim();
+        this._receiveBuffer = '';
 
         if (data) {
           this.receive(data);
         }
       }
       else {
-        this._readBuffer += c;
+        this._receiveBuffer += c;
       }
     }
   }
@@ -268,7 +337,7 @@ class BluetoothTerminal {
   }
 
   _log(...messages) {
-    messages.forEach(message => console.log(message));
+    console.log(...messages);
   }
 
   static _splitByLength(string, length) {
