@@ -148,6 +148,16 @@ class BluetoothTerminal {
   }
 
   /**
+   * Data receiving handler which called whenever the new data comes from
+   * the connected device, override it to handle incoming data.
+   *
+   * @param {string} data - Data
+   */
+  receive(data) {
+    // Handle incoming data
+  }
+
+  /**
    * Send data to the connected device.
    *
    * @param {string} data - Data
@@ -199,16 +209,6 @@ class BluetoothTerminal {
     }
 
     return promise;
-  }
-
-  /**
-   * Data receiving handler which called whenever the new data comes from
-   * the connected device, override it to handle incoming data.
-   *
-   * @param {string} data - Data
-   */
-  receive(data) {
-    // Handle incoming data
   }
 
   /**
