@@ -152,35 +152,53 @@ class BluetoothTerminal {
    *
    * @param {string} data - Data
    *
-   * @returns {boolean} True if sent, false if there is no data or device
-   *                    connected
+   * @returns {Promise} Promise which will be fulfilled when data will be sent
+   *                    or rejected if something went wrong
    */
   send(data) {
+    // Convert data to the string using global object
     data = String(data);
 
-    if (!data || !this._characteristic) {
-      return false;
+    // Return rejected promise immediately if data is empty
+    if (!data) {
+      return Promise.reject('Data must be not empty');
     }
 
     data += this._sendSeparator;
 
-    if (data.length > this._maxCharacteristicValueLength) {
-      let chunks = this.constructor._splitByLength(data,
-          this._maxCharacteristicValueLength);
+    // Split data to chunks by max characteristic value length
+    let chunks = this.constructor._splitByLength(data,
+        this._maxCharacteristicValueLength);
 
-      this._writeToCharacteristic(this._characteristic, chunks[0]);
+    // Return rejected promise immediately if there is no connected device
+    if (!this._characteristic) {
+      return Promise.reject('There is no connected device');
+    }
 
-      for (let i = 1; i < chunks.length; i++) {
+    // Write first chunk to the characteristic immediately
+    this._writeToCharacteristic(this._characteristic, chunks[0]);
+
+    let promise = Promise.resolve();
+
+    // Iterate over chunks if there are more than one of it
+    for (let i = 1; i < chunks.length; i++) {
+      // Chain new promise
+      promise = promise.then(() => new Promise((resolve, reject) => {
+        // Set timeout to send next chunk
         setTimeout(() => {
+          // Reject promise if the device has been disconnected
+          if (!this._characteristic) {
+            reject('Device has been disconnected');
+          }
+
+          // Write chunk to the characteristic and resolve the promise
           this._writeToCharacteristic(this._characteristic, chunks[i]);
-        }, i * this._sendDelay);
-      }
-    }
-    else {
-      this._writeToCharacteristic(this._characteristic, data);
+          resolve();
+        }, this._sendDelay);
+      }));
     }
 
-    return true;
+    return promise;
   }
 
   /**
