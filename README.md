@@ -1,5 +1,14 @@
 # bluetooth-terminal
 
+**BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
+the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
+
+With this class you can **communicate bidirectionally with your own device** through the one General Attribute Profile
+characteristic that only offered by DIY modules.
+
+Please, check out the [Web-Bluetooth-Terminal](https://github.com/1oginov/Web-Bluetooth-Terminal) repository to see
+implementation details in real life example.
+
 ## Quick start
 
 ```javascript
@@ -21,6 +30,16 @@ terminal.send('Simon says: Hello, world!');
 
 // Disconnect from the connected device
 terminal.disconnect();
+```
+
+## npm
+
+npm package available:
+[https://www.npmjs.com/package/bluetooth-terminal](https://www.npmjs.com/package/bluetooth-terminal), but it is not
+designed to be requirable at the moment.
+
+```sh
+$ npm install bluetooth-terminal
 ```
 
 ## API
@@ -173,3 +192,7 @@ Get the connected device name.
 **Kind**: instance method of `BluetoothTerminal`
 
 **Returns**: `string` - Device name or empty string if not connected
+
+## Contribution
+
+If you want to contribute, please use the [dev](https://github.com/1oginov/bluetooth-terminal/tree/dev/) branch.
