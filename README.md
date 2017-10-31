@@ -13,7 +13,7 @@ implementation details in real life example.
 
 ```javascript
 // Obtain configured instance
-let terminal = new BluetoothTeminal();
+let terminal = new BluetoothTerminal();
 
 // Override `receive` method to handle incoming data as you want
 terminal.receive = function(data) {
