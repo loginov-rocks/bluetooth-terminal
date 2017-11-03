@@ -22,9 +22,13 @@
   "license": "MIT",
   "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)",
   "devDependencies": {
+    "coveralls": "^3.0.0",
+    "istanbul": "^0.4.5",
     "mocha": "^4.0.1"
   },
   "scripts": {
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "test": "mocha"
   }
 }
