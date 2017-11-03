@@ -361,3 +361,8 @@ class BluetoothTerminal {
     return string.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
   }
 }
+
+// Export class as a module to support requiring
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = BluetoothTerminal;
+}
