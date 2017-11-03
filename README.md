@@ -1,5 +1,7 @@
 # bluetooth-terminal
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/1oginov/bluetooth-terminal.svg)](https://greenkeeper.io/)
+
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
 the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
 
