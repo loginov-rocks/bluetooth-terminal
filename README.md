@@ -1,5 +1,8 @@
 # bluetooth-terminal
 
+[![Build Status](https://travis-ci.org/1oginov/bluetooth-terminal.svg?branch=master)](https://travis-ci.org/1oginov/bluetooth-terminal)
+[![Coverage Status](https://coveralls.io/repos/github/1oginov/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/1oginov/bluetooth-terminal?branch=master)
+[![devDependencies Status](https://david-dm.org/1oginov/bluetooth-terminal/dev-status.svg)](https://david-dm.org/1oginov/bluetooth-terminal?type=dev)
 [![Greenkeeper badge](https://badges.greenkeeper.io/1oginov/bluetooth-terminal.svg)](https://greenkeeper.io/)
 
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
@@ -9,9 +12,19 @@ With this class you can **communicate bidirectionally with your own device** thr
 characteristic that only offered by DIY modules.
 
 Please, check out the [Web-Bluetooth-Terminal](https://github.com/1oginov/Web-Bluetooth-Terminal) repository to see
-implementation details in real life example.
+implementation details in a real life example.
 
 ## Quick start
+
+### Install
+
+You can use script directly or install it using [npm](https://npmjs.com) and require in your scripts.
+
+```sh
+$ npm install bluetooth-terminal
+```
+
+### Use
 
 ```javascript
 // Obtain configured instance
@@ -32,16 +45,6 @@ terminal.send('Simon says: Hello, world!');
 
 // Disconnect from the connected device
 terminal.disconnect();
-```
-
-## npm
-
-npm package available:
-[https://www.npmjs.com/package/bluetooth-terminal](https://www.npmjs.com/package/bluetooth-terminal), but it is not
-designed to be requirable at the moment.
-
-```sh
-$ npm install bluetooth-terminal
 ```
 
 ## API

@@ -1,6 +1,6 @@
 {
   "name": "bluetooth-terminal",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "keywords": [
     "serial",
@@ -20,5 +20,15 @@
     "url": "git+https://github.com/1oginov/bluetooth-terminal.git"
   },
   "license": "MIT",
-  "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)"
+  "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)",
+  "devDependencies": {
+    "coveralls": "^3.0.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^4.0.1"
+  },
+  "scripts": {
+    "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "test": "mocha"
+  }
 }
