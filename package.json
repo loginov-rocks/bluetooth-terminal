@@ -20,5 +20,11 @@
     "url": "git+https://github.com/1oginov/bluetooth-terminal.git"
   },
   "license": "MIT",
-  "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)"
+  "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)",
+  "devDependencies": {
+    "mocha": "^4.0.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
 }
