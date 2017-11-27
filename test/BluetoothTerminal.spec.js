@@ -31,9 +31,9 @@ describe('BluetoothTerminal', () => {
           });
         });
 
-    it('should throw an error if value is null', () => {
+    it('should throw an error if value is 0', () => {
       assert.throws(() => {
-        bt.setServiceUuid(null);
+        bt.setServiceUuid(0);
       });
     });
   });
@@ -58,9 +58,71 @@ describe('BluetoothTerminal', () => {
           });
         });
 
-    it('should throw an error if value is null', () => {
+    it('should throw an error if value is 0', () => {
       assert.throws(() => {
-        bt.setCharacteristicUuid(null);
+        bt.setCharacteristicUuid(0);
+      });
+    });
+  });
+
+  describe('setReceiveSeparator', () => {
+    it('should set string', () => {
+      const value = '\n';
+      bt.setReceiveSeparator(value);
+      assert.strictEqual(bt._receiveSeparator, value);
+    });
+
+    it('should throw an error if value is not a string', () => {
+      assert.throws(() => {
+        bt.setReceiveSeparator(42);
+      });
+    });
+
+    it('should throw an error if value length is more than one character',
+        () => {
+          assert.throws(() => {
+            bt.setReceiveSeparator('\r\n');
+          });
+        });
+  });
+
+  describe('setSendSeparator', () => {
+    it('should set string', () => {
+      const value = '\n';
+      bt.setSendSeparator(value);
+      assert.strictEqual(bt._receiveSeparator, value);
+    });
+
+    it('should throw an error if value is not a string', () => {
+      assert.throws(() => {
+        bt.setSendSeparator(42);
+      });
+    });
+
+    it('should throw an error if value length is more than one character',
+        () => {
+          assert.throws(() => {
+            bt.setSendSeparator('\r\n');
+          });
+        });
+  });
+
+  describe('setSendDelay', () => {
+    it('should set number', () => {
+      const value = 42;
+      bt.setSendDelay(value);
+      assert.strictEqual(bt._sendDelay, value);
+    });
+
+    it('should throw an error if value is not a number', () => {
+      assert.throws(() => {
+        bt.setSendDelay(NaN);
+      });
+    });
+
+    it('should throw an error if value is less than zero', () => {
+      assert.throws(() => {
+        bt.setSendDelay(-42);
       });
     });
   });
