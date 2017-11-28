@@ -157,7 +157,7 @@ class BluetoothTerminal {
    */
   send(data) {
     // Convert data to the string using global object
-    data = String(data);
+    data = String(data || '');
 
     // Return rejected promise immediately if data is empty
     if (!data) {
@@ -223,7 +223,10 @@ class BluetoothTerminal {
     return (device ? Promise.resolve(device) : this._requestBluetoothDevice()).
         then((device) => this._connectDeviceAndCacheCharacteristic(device)).
         then((characteristic) => this._startNotifications(characteristic)).
-        catch((error) => this._log(error));
+        catch((error) => {
+          this._log(error);
+          return Promise.reject(error);
+        });
   }
 
   /**
