@@ -165,6 +165,38 @@ describe('BluetoothTerminal', () => {
     });
   });
 
+  describe('disconnect', () => {
+    it('should disconnect once', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+      const disconnectSpy = sinon.spy(device.gatt, 'disconnect');
+
+      return bt.connect().
+          then(() => {
+            bt.disconnect();
+            bt.disconnect(); // Second call should not fire disconnect method
+            assert(disconnectSpy.calledOnce);
+          });
+    });
+
+    it('should not call `device.gatt.disconnect` if is already disconnected',
+        () => {
+          const device = new DeviceMock('Simon', [bt._serviceUuid]);
+          global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+          const disconnectSpy = sinon.spy(device.gatt, 'disconnect');
+
+          return bt.connect().
+              then(() => {
+                // Hard mock used here to cover the case
+                bt._device.gatt.connected = false;
+                bt.disconnect();
+                assert(disconnectSpy.notCalled);
+              });
+        });
+  });
+
   describe('_splitByLength', function() {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
