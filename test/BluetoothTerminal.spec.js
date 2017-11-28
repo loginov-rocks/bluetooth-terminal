@@ -197,6 +197,23 @@ describe('BluetoothTerminal', () => {
         });
   });
 
+  describe('getDeviceName', () => {
+    it('should return empty string if not connected', () => {
+      assert.strictEqual(bt.getDeviceName(), '');
+    });
+
+    it('should return device name', () => {
+      const value = 'Simon';
+      const device = new DeviceMock(value, [bt._serviceUuid]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+      return bt.connect().
+          then(() => {
+            assert.strictEqual(bt.getDeviceName(), value);
+          });
+    });
+  });
+
   describe('_splitByLength', function() {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
