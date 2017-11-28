@@ -22,11 +22,15 @@
   "license": "MIT",
   "author": "Danila Loginov <danila@loginov.rocks> (https://loginov.rocks)",
   "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.0",
     "eslint": "^4.12.0",
     "eslint-config-google": "^0.9.1",
     "istanbul": "^0.4.5",
-    "mocha": "^4.0.1"
+    "mocha": "^4.0.1",
+    "sinon": "^4.1.2",
+    "web-bluetooth-mock": "^1.0.2"
   },
   "scripts": {
     "cover": "istanbul cover ./node_modules/mocha/bin/_mocha",

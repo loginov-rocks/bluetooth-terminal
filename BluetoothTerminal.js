@@ -223,7 +223,10 @@ class BluetoothTerminal {
     return (device ? Promise.resolve(device) : this._requestBluetoothDevice()).
         then((device) => this._connectDeviceAndCacheCharacteristic(device)).
         then((characteristic) => this._startNotifications(characteristic)).
-        catch((error) => this._log(error));
+        catch((error) => {
+          this._log(error);
+          return Promise.reject(error);
+        });
   }
 
   /**

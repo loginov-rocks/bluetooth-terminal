@@ -1,8 +1,16 @@
-const assert = require('assert');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 const path = require('path');
+const sinon = require('sinon');
+const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
 
+chai.use(chaiAsPromised);
+
+const {assert} = chai;
 const BluetoothTerminal = require(path.join(__dirname, '..',
     'BluetoothTerminal'));
+
+global.navigator = global.navigator || {};
 
 describe('BluetoothTerminal', () => {
   let bt;
@@ -127,7 +135,37 @@ describe('BluetoothTerminal', () => {
     });
   });
 
-  describe('splitByLength', function() {
+  describe('connect', () => {
+    it('should connect', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+      return assert.isFulfilled(bt.connect());
+    });
+
+    it('should connect the second time to cached device', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+      const requestDeviceSpy = sinon.spy(global.navigator.bluetooth,
+          'requestDevice');
+
+      return bt.connect().
+          then(() => bt.connect()).
+          then(() => {
+            assert(requestDeviceSpy.calledOnce);
+          });
+    });
+
+    it('should not connect if device not found', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid + 42]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+
+      return assert.isRejected(bt.connect());
+    });
+  });
+
+  describe('_splitByLength', function() {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
     });
