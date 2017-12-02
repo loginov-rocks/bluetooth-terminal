@@ -1,8 +1,10 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
+const {JSDOM} = require('jsdom');
 const path = require('path');
 const sinon = require('sinon');
-const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
+const {TextDecoder, TextEncoder} = require('util');
 
 chai.use(chaiAsPromised);
 
@@ -10,8 +12,14 @@ const {assert} = chai;
 const BluetoothTerminal = require(path.join(__dirname, '..',
     'BluetoothTerminal'));
 
-global.navigator = global.navigator || {};
-global.TextEncoder = require('util').TextEncoder;
+// Provide testing environment with `window` object to support DOM events and
+// with `navigator` to spy for bluetooth features
+global.window = new JSDOM('').window;
+global.navigator = window.navigator;
+
+// Use node text encoding features from `util` module
+global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder;
 
 describe('BluetoothTerminal', () => {
   let bt;
