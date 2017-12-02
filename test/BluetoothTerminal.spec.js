@@ -204,6 +204,69 @@ describe('BluetoothTerminal', () => {
         });
   });
 
+  describe('receive', () => {
+    let connectPromise;
+    let characteristicValueChangedEvent = new window.
+        CustomEvent('characteristicvaluechanged');
+
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      global.navigator.bluetooth = new WebBluetoothMock([device]);
+      connectPromise = bt.connect();
+    });
+
+    it('should not be called when a value provided does not have a separator',
+        () => {
+          let value = 'Hello, world!';
+
+          return connectPromise.
+              then(() => {
+                const characteristic = bt._characteristic;
+
+                let receiveSpy = sinon.spy(bt, 'receive');
+
+                characteristic.value = new TextEncoder().encode(value);
+                characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+                assert(receiveSpy.notCalled);
+              });
+        });
+
+    it('should be called when a value provided have a separator', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator;
+
+      return connectPromise.
+          then(() => {
+            const characteristic = bt._characteristic;
+
+            let receiveSpy = sinon.spy(bt, 'receive');
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            assert(receiveSpy.calledOnce);
+          });
+    });
+
+    it('should be called twice when a value provided have three separators, ' +
+        'but there is no data data between the first and second', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator +
+          bt._receiveSeparator + 'Ciao, mondo!' + bt._receiveSeparator;
+
+      return connectPromise.
+          then(() => {
+            const characteristic = bt._characteristic;
+
+            let receiveSpy = sinon.spy(bt, 'receive');
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            assert(receiveSpy.calledTwice);
+          });
+    });
+  });
+
   describe('send', () => {
     it('should reject empty data', () => {
       return assert.isRejected(bt.send());
