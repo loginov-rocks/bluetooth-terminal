@@ -346,7 +346,48 @@ describe('BluetoothTerminal', () => {
     });
   });
 
-  describe('_splitByLength', function() {
+  describe('_stopNotifications', () => {
+    let characteristicValueChangedEvent = new window.
+        CustomEvent('characteristicvaluechanged');
+    let connectPromise;
+    let receiveSpy;
+
+    // Connect to the device and set up the spy before each test
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectPromise = bt.connect();
+      receiveSpy = sinon.spy(bt, 'receive');
+    });
+
+    it('should stop data receiving', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator;
+
+      let characteristic;
+
+      return connectPromise.
+          then(() => {
+            characteristic = bt._characteristic;
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledOnce);
+          }).
+          then(() => {
+            // Call for private method only to test it
+            return bt._stopNotifications(bt._characteristic);
+          }).
+          then(() => {
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledOnce); // Remains the same
+          });
+    });
+  });
+
+  describe('_splitByLength', () => {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
     });
