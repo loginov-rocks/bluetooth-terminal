@@ -1,8 +1,10 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
+const {JSDOM} = require('jsdom');
 const path = require('path');
 const sinon = require('sinon');
-const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
+const {TextDecoder, TextEncoder} = require('util');
 
 chai.use(chaiAsPromised);
 
@@ -10,12 +12,19 @@ const {assert} = chai;
 const BluetoothTerminal = require(path.join(__dirname, '..',
     'BluetoothTerminal'));
 
-global.navigator = global.navigator || {};
-global.TextEncoder = require('util').TextEncoder;
+// Provide testing environment with `window` object to support DOM events and
+// with `navigator` to spy for bluetooth features
+global.window = new JSDOM('').window;
+global.navigator = window.navigator;
+
+// Use node text encoding features from `util` module
+global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder;
 
 describe('BluetoothTerminal', () => {
   let bt;
 
+  // Create new instance before each test
   beforeEach(() => {
     bt = new BluetoothTerminal();
   });
@@ -139,17 +148,16 @@ describe('BluetoothTerminal', () => {
   describe('connect', () => {
     it('should connect', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
 
       return assert.isFulfilled(bt.connect());
     });
 
     it('should connect the second time to cached device', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
 
-      const requestDeviceSpy = sinon.spy(global.navigator.bluetooth,
-          'requestDevice');
+      const requestDeviceSpy = sinon.spy(navigator.bluetooth, 'requestDevice');
 
       return bt.connect().
           then(() => bt.connect()).
@@ -158,20 +166,27 @@ describe('BluetoothTerminal', () => {
 
     it('should not connect if device not found', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid + 42]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
 
       return assert.isRejected(bt.connect());
     });
   });
 
   describe('disconnect', () => {
+    let connectPromise;
+    let device;
+    let disconnectSpy;
+
+    // Connect to the device and set up the spy before each test
+    beforeEach(() => {
+      device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectPromise = bt.connect();
+      disconnectSpy = sinon.spy(device.gatt, 'disconnect');
+    });
+
     it('should disconnect once', () => {
-      const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
-
-      const disconnectSpy = sinon.spy(device.gatt, 'disconnect');
-
-      return bt.connect().
+      return connectPromise.
           then(() => {
             bt.disconnect();
             bt.disconnect(); // Second call should not fire disconnect method
@@ -181,12 +196,7 @@ describe('BluetoothTerminal', () => {
 
     it('should not call `device.gatt.disconnect` if is already disconnected',
         () => {
-          const device = new DeviceMock('Simon', [bt._serviceUuid]);
-          global.navigator.bluetooth = new WebBluetoothMock([device]);
-
-          const disconnectSpy = sinon.spy(device.gatt, 'disconnect');
-
-          return bt.connect().
+          return connectPromise.
               then(() => {
                 // Hard mock used here to cover the case
                 bt._device.gatt.connected = false;
@@ -196,7 +206,73 @@ describe('BluetoothTerminal', () => {
         });
   });
 
+  describe('receive', () => {
+    let characteristicValueChangedEvent = new window.
+        CustomEvent('characteristicvaluechanged');
+    let connectPromise;
+    let receiveSpy;
+
+    // Connect to the device and set up the spy before each test
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectPromise = bt.connect();
+      receiveSpy = sinon.spy(bt, 'receive');
+    });
+
+    it('should not be called when a value provided does not have a separator',
+        () => {
+          let value = 'Hello, world!';
+
+          return connectPromise.
+              then(() => {
+                const characteristic = bt._characteristic;
+
+                characteristic.value = new TextEncoder().encode(value);
+                characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+                return assert(receiveSpy.notCalled);
+              });
+        });
+
+    it('should be called when a value provided have a separator', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator;
+
+      return connectPromise.
+          then(() => {
+            const characteristic = bt._characteristic;
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledOnce);
+          });
+    });
+
+    it('should be called twice when a value provided have three separators, ' +
+        'but there is no data data between the first and second', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator +
+          bt._receiveSeparator + 'Ciao, mondo!' + bt._receiveSeparator;
+
+      return connectPromise.
+          then(() => {
+            const characteristic = bt._characteristic;
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledTwice);
+          });
+    });
+  });
+
   describe('send', () => {
+    // Set up Web Bluetooth mock before each test
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+    });
+
     it('should reject empty data', () => {
       return assert.isRejected(bt.send());
     });
@@ -206,9 +282,6 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should write to characteristic', () => {
-      const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
-
       let writeValueSpy;
 
       return bt.connect().
@@ -220,9 +293,6 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should write long data to characteristic consistently', () => {
-      const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
-
       let writeValueSpy;
       let data = '';
 
@@ -240,9 +310,6 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should reject if device suddenly disconnects', () => {
-      const device = new DeviceMock('Simon', [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
-
       let writeValueSpy;
       let data = '';
 
@@ -261,21 +328,121 @@ describe('BluetoothTerminal', () => {
   });
 
   describe('getDeviceName', () => {
+    // Set up Web Bluetooth mock before each test
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+    });
+
     it('should return empty string if not connected', () => {
       assert.strictEqual(bt.getDeviceName(), '');
     });
 
     it('should return device name', () => {
       const value = 'Simon';
-      const device = new DeviceMock(value, [bt._serviceUuid]);
-      global.navigator.bluetooth = new WebBluetoothMock([device]);
 
       return bt.connect().
           then(() => assert.strictEqual(bt.getDeviceName(), value));
     });
   });
 
-  describe('_splitByLength', function() {
+  describe('_stopNotifications', () => {
+    let characteristicValueChangedEvent = new window.
+        CustomEvent('characteristicvaluechanged');
+    let connectPromise;
+    let receiveSpy;
+
+    // Connect to the device and set up the spy before each test
+    beforeEach(() => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectPromise = bt.connect();
+      receiveSpy = sinon.spy(bt, 'receive');
+    });
+
+    it('should stop data receiving', () => {
+      let value = 'Hello, world!' + bt._receiveSeparator;
+
+      let characteristic;
+
+      return connectPromise.
+          then(() => {
+            characteristic = bt._characteristic;
+
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledOnce);
+          }).
+          then(() => {
+            // Call for private method only to test it
+            return bt._stopNotifications(bt._characteristic);
+          }).
+          then(() => {
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
+
+            return assert(receiveSpy.calledOnce); // Remains the same
+          });
+    });
+  });
+
+  describe('_handleDisconnection', () => {
+    let connectDeviceAndCacheCharacteristicSpy;
+    let connectPromise;
+    let device;
+    let gattServerDisconnectedEvent = new window.
+        CustomEvent('gattserverdisconnected');
+
+    // Set up Web Bluetooth mock before each test
+    beforeEach(() => {
+      device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectDeviceAndCacheCharacteristicSpy = sinon.spy(bt,
+          '_connectDeviceAndCacheCharacteristic');
+      connectPromise = bt.connect();
+    });
+
+    it('should reconnect', () => {
+      return connectPromise.
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+
+    it('should fail to reconnect and call `log` with the error', (done) => {
+      const error = 'Simulated error';
+      const logSpy = sinon.spy(bt, '_log');
+
+      connectPromise.
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            // Simulate disconnection
+            device.gatt.connected = false;
+            device.gatt.connect = () => Promise.reject(error);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise
+            setTimeout(() => {
+              assert(logSpy.lastCall.calledWith(error));
+              done();
+            }, 0);
+
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+  });
+
+  describe('_splitByLength', () => {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
     });

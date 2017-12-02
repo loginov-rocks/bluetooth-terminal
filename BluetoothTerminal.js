@@ -417,6 +417,7 @@ class BluetoothTerminal {
 }
 
 // Export class as a module to support requiring
+/* istanbul ignore next */
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = BluetoothTerminal;
 }
