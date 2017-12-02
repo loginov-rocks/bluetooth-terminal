@@ -387,6 +387,61 @@ describe('BluetoothTerminal', () => {
     });
   });
 
+  describe('_handleDisconnection', () => {
+    let connectDeviceAndCacheCharacteristicSpy;
+    let connectPromise;
+    let device;
+    let gattServerDisconnectedEvent = new window.
+        CustomEvent('gattserverdisconnected');
+
+    // Set up Web Bluetooth mock before each test
+    beforeEach(() => {
+      device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      connectDeviceAndCacheCharacteristicSpy = sinon.spy(bt,
+          '_connectDeviceAndCacheCharacteristic');
+      connectPromise = bt.connect();
+    });
+
+    it('should reconnect', () => {
+      return connectPromise.
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+
+    it('should fail to reconnect and call `log` with the error', (done) => {
+      const error = 'Simulated error';
+      const logSpy = sinon.spy(bt, '_log');
+
+      connectPromise.
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            // Simulate disconnection
+            device.gatt.connected = false;
+            device.gatt.connect = () => Promise.reject(error);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise
+            setTimeout(() => {
+              assert(logSpy.lastCall.calledWith(error));
+              done();
+            }, 0);
+
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+  });
+
   describe('_splitByLength', () => {
     it('should split string shorter than specified length to one chunk', () => {
       assert.equal(bt.constructor._splitByLength('abcde', 6).length, 1);
