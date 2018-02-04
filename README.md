@@ -18,32 +18,33 @@ implementation details in a real life example.
 
 ### Install
 
-You can use script directly or install it using [npm](https://npmjs.com) and require in your scripts.
+You can use the [script](https://github.com/1oginov/bluetooth-terminal/blob/master/src/BluetoothTerminal.js) directly or
+install it using [npm](https://npmjs.com) and require in your code.
 
 ```sh
-$ npm install bluetooth-terminal
+npm install bluetooth-terminal
 ```
 
 ### Use
 
-```javascript
-// Obtain configured instance
+```js
+// Obtain configured instance.
 let terminal = new BluetoothTerminal();
 
-// Override `receive` method to handle incoming data as you want
+// Override `receive` method to handle incoming data as you want.
 terminal.receive = function(data) {
   alert(data);
 };
 
-// Request the device for connection and get its name after successful connection
+// Request the device for connection and get its name after successful connection.
 terminal.connect().then(() => {
   alert(terminal.getDeviceName() + ' is connected!');
 });
 
-// Send something to the connected device
+// Send something to the connected device.
 terminal.send('Simon says: Hello, world!');
 
-// Disconnect from the connected device
+// Disconnect from the connected device.
 terminal.disconnect();
 ```
 
@@ -62,11 +63,11 @@ Bluetooth Terminal class.
   * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
   * [setSendSeparator(separator)](#setsendseparatorseparator)
   * [setSendDelay(delay)](#setsenddelaydelay)
-  * [connect() ⇒ `Promise`](#connect--promise)
+  * [connect() ⇒ Promise](#connect--promise)
   * [disconnect()](#disconnect)
   * [receive(data)](#receivedata)
-  * [send(data) ⇒ `Promise`](#senddata--promise)
-  * [getDeviceName() ⇒ `string`](#getdevicename--string)
+  * [send(data) ⇒ Promise](#senddata--promise)
+  * [getDeviceName() ⇒ string](#getdevicename--string)
 
 ---
 
@@ -151,7 +152,7 @@ Launch Bluetooth device chooser and connect to the selected device.
 **Kind**: instance method of `BluetoothTerminal`
 
 **Returns**: `Promise` - Promise which will be fulfilled when notifications will be started or rejected if something
-went wrong  
+went wrong
 
 ---
 
@@ -182,7 +183,7 @@ Send data to the connected device.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-**Returns**: `Promise` - Promise which will be fulfilled when data will be sent or rejected if something went wrong  
+**Returns**: `Promise` - Promise which will be fulfilled when data will be sent or rejected if something went wrong
 
 | Parameter | Type     | Description |
 | --------- | -------- | ----------- |
@@ -200,4 +201,4 @@ Get the connected device name.
 
 ## Contribution
 
-If you want to contribute, please use the [dev](https://github.com/1oginov/bluetooth-terminal/tree/dev/) branch.
+If you want to contribute, please use the [dev](https://github.com/1oginov/bluetooth-terminal/tree/dev) branch.
