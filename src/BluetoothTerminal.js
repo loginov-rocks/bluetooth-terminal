@@ -8,10 +8,9 @@ class BluetoothTerminal {
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
    * @param {string} [receiveSeparator='\n'] - Receive separator
    * @param {string} [sendSeparator='\n'] - Send separator
-   * @param {!number} [sendDelay=100] - Send delay
    */
   constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
-              receiveSeparator = '\n', sendSeparator = '\n', sendDelay = 100) {
+              receiveSeparator = '\n', sendSeparator = '\n') {
     // Used private variables.
     this._receiveBuffer = ''; // Buffer containing not separated data.
     this._maxCharacteristicValueLength = 20; // Max characteristic value length.
@@ -28,7 +27,6 @@ class BluetoothTerminal {
     this.setCharacteristicUuid(characteristicUuid);
     this.setReceiveSeparator(receiveSeparator);
     this.setSendSeparator(sendSeparator);
-    this.setSendDelay(sendDelay);
   }
 
   /**
@@ -98,22 +96,6 @@ class BluetoothTerminal {
     }
 
     this._sendSeparator = separator;
-  }
-
-  /**
-   * Set delay between chunks of long data sending.
-   * @param {!number} delay - Delay in milliseconds
-   */
-  setSendDelay(delay) {
-    if (!Number.isInteger(delay)) {
-      throw new Error('Delay type is not a number');
-    }
-
-    if (delay <= 0) {
-      throw new Error('Delay must be more than a null');
-    }
-
-    this._sendDelay = delay;
   }
 
   /**
@@ -194,7 +176,7 @@ class BluetoothTerminal {
           // Write chunk to the characteristic and resolve the promise.
           this._writeToCharacteristic(this._characteristic, chunks[i]);
           resolve();
-        }, this._sendDelay);
+        }, 100);
       }));
     }
 

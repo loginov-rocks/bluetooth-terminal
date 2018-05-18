@@ -126,26 +126,6 @@ describe('BluetoothTerminal', () => {
         });
   });
 
-  describe('setSendDelay', () => {
-    it('should set number', () => {
-      const value = 42;
-      bt.setSendDelay(value);
-      assert.strictEqual(bt._sendDelay, value);
-    });
-
-    it('should throw an error if value is not a number', () => {
-      assert.throws(() => {
-        bt.setSendDelay(NaN);
-      });
-    });
-
-    it('should throw an error if value is less than zero', () => {
-      assert.throws(() => {
-        bt.setSendDelay(-42);
-      });
-    });
-  });
-
   describe('connect', () => {
     it('should connect', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid]);
