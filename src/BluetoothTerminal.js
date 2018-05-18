@@ -371,10 +371,11 @@ class BluetoothTerminal {
    * Write to characteristic.
    * @param {Object} characteristic
    * @param {string} data
+   * @return {Promise}
    * @private
    */
   _writeToCharacteristic(characteristic, data) {
-    characteristic.writeValue(new TextEncoder().encode(data));
+    return characteristic.writeValue(new TextEncoder().encode(data));
   }
 
   /**
