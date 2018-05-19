@@ -57,12 +57,11 @@ Bluetooth Terminal class.
 **Kind**: global class
 
 * [BluetoothTerminal](#bluetoothterminal)
-  * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [sendDelay])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator-senddelay)
+  * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator)
   * [setServiceUuid(uuid)](#setserviceuuiduuid)
   * [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
   * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
   * [setSendSeparator(separator)](#setsendseparatorseparator)
-  * [setSendDelay(delay)](#setsenddelaydelay)
   * [connect() ⇒ Promise](#connect--promise)
   * [disconnect()](#disconnect)
   * [receive(data)](#receivedata)
@@ -71,7 +70,7 @@ Bluetooth Terminal class.
 
 ---
 
-#### `new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [sendDelay])`
+#### `new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator])`
 
 Create preconfigured Bluetooth Terminal instance.
 
@@ -81,7 +80,6 @@ Create preconfigured Bluetooth Terminal instance.
 | [characteristicUuid] | `number` &#124; `string` | `0xFFE1` | Characteristic UUID |
 | [receiveSeparator]   | `string`                 | `'\n'`   | Receive separator   |
 | [sendSeparator]      | `string`                 | `'\n'`   | Send separator      |
-| [sendDelay]          | `number`                 | `100`    | Send delay          |
 
 ---
 
@@ -130,18 +128,6 @@ Set string representing separator for data coming to the connected device, end o
 | Parameter | Type     | Description    |
 | --------- | -------- | -------------- |
 | separator | `string` | Send separator |
-
----
-
-#### `setSendDelay(delay)`
-
-Set delay between chunks of long data sending.
-
-**Kind**: instance method of `BluetoothTerminal`
-
-| Parameter | Type     | Description           |
-| --------- | -------- | --------------------- |
-| delay     | `number` | Delay in milliseconds |
 
 ---
 

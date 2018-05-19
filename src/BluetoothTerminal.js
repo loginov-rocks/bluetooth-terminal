@@ -8,10 +8,9 @@ class BluetoothTerminal {
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
    * @param {string} [receiveSeparator='\n'] - Receive separator
    * @param {string} [sendSeparator='\n'] - Send separator
-   * @param {!number} [sendDelay=100] - Send delay
    */
   constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
-              receiveSeparator = '\n', sendSeparator = '\n', sendDelay = 100) {
+              receiveSeparator = '\n', sendSeparator = '\n') {
     // Used private variables.
     this._receiveBuffer = ''; // Buffer containing not separated data.
     this._maxCharacteristicValueLength = 20; // Max characteristic value length.
@@ -28,7 +27,6 @@ class BluetoothTerminal {
     this.setCharacteristicUuid(characteristicUuid);
     this.setReceiveSeparator(receiveSeparator);
     this.setSendSeparator(sendSeparator);
-    this.setSendDelay(sendDelay);
   }
 
   /**
@@ -101,22 +99,6 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set delay between chunks of long data sending.
-   * @param {!number} delay - Delay in milliseconds
-   */
-  setSendDelay(delay) {
-    if (!Number.isInteger(delay)) {
-      throw new Error('Delay type is not a number');
-    }
-
-    if (delay <= 0) {
-      throw new Error('Delay must be more than a null');
-    }
-
-    this._sendDelay = delay;
-  }
-
-  /**
    * Launch Bluetooth device chooser and connect to the selected device.
    * @return {Promise} Promise which will be fulfilled when notifications will
    *                   be started or rejected if something went wrong
@@ -176,25 +158,21 @@ class BluetoothTerminal {
     }
 
     // Write first chunk to the characteristic immediately.
-    this._writeToCharacteristic(this._characteristic, chunks[0]);
-
-    let promise = Promise.resolve();
+    let promise = this._writeToCharacteristic(this._characteristic, chunks[0]);
 
     // Iterate over chunks if there are more than one of it.
     for (let i = 1; i < chunks.length; i++) {
       // Chain new promise.
       promise = promise.then(() => new Promise((resolve, reject) => {
-        // Set timeout to send next chunk.
-        setTimeout(() => {
-          // Reject promise if the device has been disconnected.
-          if (!this._characteristic) {
-            reject('Device has been disconnected');
-          }
+        // Reject promise if the device has been disconnected.
+        if (!this._characteristic) {
+          reject('Device has been disconnected');
+        }
 
-          // Write chunk to the characteristic and resolve the promise.
-          this._writeToCharacteristic(this._characteristic, chunks[i]);
-          resolve();
-        }, this._sendDelay);
+        // Write chunk to the characteristic and resolve the promise.
+        this._writeToCharacteristic(this._characteristic, chunks[i]).
+            then(resolve).
+            catch(reject);
       }));
     }
 
@@ -389,10 +367,11 @@ class BluetoothTerminal {
    * Write to characteristic.
    * @param {Object} characteristic
    * @param {string} data
+   * @return {Promise}
    * @private
    */
   _writeToCharacteristic(characteristic, data) {
-    characteristic.writeValue(new TextEncoder().encode(data));
+    return characteristic.writeValue(new TextEncoder().encode(data));
   }
 
   /**
