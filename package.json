@@ -39,7 +39,7 @@
     "istanbul": "^0.4.5",
     "jsdom": "^11.10.0",
     "mocha": "^5.2.0",
-    "sinon": "^5.0.7",
+    "sinon": "^6.0.0",
     "web-bluetooth-mock": "^1.0.2"
   }
 }
