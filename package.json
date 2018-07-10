@@ -34,12 +34,12 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.1",
-    "eslint": "^4.19.1",
+    "eslint": "^5.0.0",
     "eslint-config-google": "^0.9.1",
     "istanbul": "^0.4.5",
     "jsdom": "^11.10.0",
     "mocha": "^5.2.0",
-    "sinon": "^5.0.7",
+    "sinon": "^6.0.0",
     "web-bluetooth-mock": "^1.0.2"
   }
 }
