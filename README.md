@@ -1,5 +1,6 @@
 # bluetooth-terminal
 
+[![NpmVersion](https://img.shields.io/npm/v/bluetooth-terminal.svg)](https://www.npmjs.com/package/bluetooth-terminal)
 [![Build Status](https://travis-ci.org/1oginov/bluetooth-terminal.svg?branch=master)](https://travis-ci.org/1oginov/bluetooth-terminal)
 [![Coverage Status](https://coveralls.io/repos/github/1oginov/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/1oginov/bluetooth-terminal?branch=master)
 [![devDependencies Status](https://david-dm.org/1oginov/bluetooth-terminal/dev-status.svg)](https://david-dm.org/1oginov/bluetooth-terminal?type=dev)
