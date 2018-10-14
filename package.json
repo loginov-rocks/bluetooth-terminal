@@ -35,7 +35,7 @@
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.2",
     "eslint": "^5.6.1",
-    "eslint-config-google": "^0.10.0",
+    "eslint-config-google": "^0.11.0",
     "istanbul": "^0.4.5",
     "jsdom": "^12.1.0",
     "mocha": "^5.2.0",
