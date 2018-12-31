@@ -188,7 +188,7 @@ describe('BluetoothTerminal', () => {
   });
 
   describe('receive', () => {
-    let characteristicValueChangedEvent = new window.
+    const characteristicValueChangedEvent = new window.
         CustomEvent('characteristicvaluechanged');
     let connectPromise;
     let receiveSpy;
@@ -203,7 +203,7 @@ describe('BluetoothTerminal', () => {
 
     it('should not be called when a value provided does not have a separator',
         () => {
-          let value = 'Hello, world!';
+          const value = 'Hello, world!';
 
           return connectPromise.
               then(() => {
@@ -217,7 +217,7 @@ describe('BluetoothTerminal', () => {
         });
 
     it('should be called when a value provided have a separator', () => {
-      let value = 'Hello, world!' + bt._receiveSeparator;
+      const value = 'Hello, world!' + bt._receiveSeparator;
 
       return connectPromise.
           then(() => {
@@ -232,7 +232,7 @@ describe('BluetoothTerminal', () => {
 
     it('should be called twice when a value provided have three separators, ' +
         'but there is no data data between the first and second', () => {
-      let value = 'Hello, world!' + bt._receiveSeparator +
+      const value = 'Hello, world!' + bt._receiveSeparator +
           bt._receiveSeparator + 'Ciao, mondo!' + bt._receiveSeparator;
 
       return connectPromise.
@@ -328,7 +328,7 @@ describe('BluetoothTerminal', () => {
   });
 
   describe('_stopNotifications', () => {
-    let characteristicValueChangedEvent = new window.
+    const characteristicValueChangedEvent = new window.
         CustomEvent('characteristicvaluechanged');
     let connectPromise;
     let receiveSpy;
@@ -342,7 +342,7 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should stop data receiving', () => {
-      let value = 'Hello, world!' + bt._receiveSeparator;
+      const value = 'Hello, world!' + bt._receiveSeparator;
 
       let characteristic;
 
@@ -372,7 +372,7 @@ describe('BluetoothTerminal', () => {
     let connectDeviceAndCacheCharacteristicSpy;
     let connectPromise;
     let device;
-    let gattServerDisconnectedEvent = new window.
+    const gattServerDisconnectedEvent = new window.
         CustomEvent('gattserverdisconnected');
 
     // Set up Web Bluetooth mock before each test.
