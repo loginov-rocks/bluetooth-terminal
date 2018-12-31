@@ -1,10 +1,10 @@
 # bluetooth-terminal
 
 [![NpmVersion](https://img.shields.io/npm/v/bluetooth-terminal.svg)](https://www.npmjs.com/package/bluetooth-terminal)
-[![Build Status](https://travis-ci.org/1oginov/bluetooth-terminal.svg?branch=master)](https://travis-ci.org/1oginov/bluetooth-terminal)
-[![Coverage Status](https://coveralls.io/repos/github/1oginov/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/1oginov/bluetooth-terminal?branch=master)
-[![devDependencies Status](https://david-dm.org/1oginov/bluetooth-terminal/dev-status.svg)](https://david-dm.org/1oginov/bluetooth-terminal?type=dev)
-[![Greenkeeper badge](https://badges.greenkeeper.io/1oginov/bluetooth-terminal.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/loginov-rocks/bluetooth-terminal.svg?branch=master)](https://travis-ci.org/loginov-rocks/bluetooth-terminal)
+[![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=master)
+[![devDependencies Status](https://david-dm.org/loginov-rocks/bluetooth-terminal/dev-status.svg)](https://david-dm.org/loginov-rocks/bluetooth-terminal?type=dev)
+[![Greenkeeper badge](https://badges.greenkeeper.io/loginov-rocks/bluetooth-terminal.svg)](https://greenkeeper.io/)
 
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
 the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
@@ -12,15 +12,15 @@ the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth
 With this class you can **communicate bidirectionally with your own device** through the one General Attribute Profile
 characteristic that only offered by DIY modules.
 
-Please check out the [Web-Bluetooth-Terminal](https://github.com/1oginov/Web-Bluetooth-Terminal) repository to see
+Please check out the [Web-Bluetooth-Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository to see
 implementation details in a real life example.
 
 ## Quick start
 
 ### Install
 
-You can use the [script](https://github.com/1oginov/bluetooth-terminal/blob/master/src/BluetoothTerminal.js) directly or
-install it using [npm](https://npmjs.com) and require in your code.
+You can use the [script](https://github.com/loginov-rocks/bluetooth-terminal/blob/master/src/BluetoothTerminal.js)
+directly or install it using [npm](https://npmjs.com) and require in your code.
 
 ```sh
 npm install bluetooth-terminal
@@ -188,4 +188,4 @@ Get the connected device name.
 
 ## Contribution
 
-Please use the [dev](https://github.com/1oginov/bluetooth-terminal/tree/dev) branch and feel free to contribute!
+Please use the [dev](https://github.com/loginov-rocks/bluetooth-terminal/tree/dev) branch and feel free to contribute!
