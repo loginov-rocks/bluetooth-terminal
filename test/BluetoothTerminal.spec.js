@@ -126,6 +126,22 @@ describe('BluetoothTerminal', () => {
         });
   });
 
+  describe('setConnectedListener', () => {
+    it('should set function', () => {
+      const value = () => {};
+      bt.setConnectedListener(value);
+      assert.strictEqual(bt._connectedListener, value);
+    });
+  });
+
+  describe('setDisconnectedListener', () => {
+    it('should set function', () => {
+      const value = () => {};
+      bt.setDisconnectedListener(value);
+      assert.strictEqual(bt._disconnectedListener, value);
+    });
+  });
+
   describe('connect', () => {
     it('should connect', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid]);
@@ -150,6 +166,16 @@ describe('BluetoothTerminal', () => {
       navigator.bluetooth = new WebBluetoothMock([device]);
 
       return assert.isRejected(bt.connect());
+    });
+
+    it('should call connectedListener after establishing connection', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+
+      const connectedListenerSpy = sinon.spy();
+      bt.setConnectedListener(connectedListenerSpy);
+      return bt.connect().
+          then(() => assert(connectedListenerSpy.calledOnce));
     });
   });
 
@@ -185,6 +211,16 @@ describe('BluetoothTerminal', () => {
                 return assert(disconnectSpy.notCalled);
               });
         });
+
+    it('should call disconnectedListener if device was disonnected', () => {
+      return connectPromise.
+          then(() => {
+            const disconnectedListenerSpy = sinon.spy();
+            bt.setDisconnectedListener(disconnectedListenerSpy);
+            bt.disconnect();
+            return assert(disconnectedListenerSpy.calledOnce);
+          });
+    });
   });
 
   describe('receive', () => {
@@ -419,6 +455,20 @@ describe('BluetoothTerminal', () => {
             }, 0);
 
             return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+
+    it('should call disconnectedListener', () => {
+      const disconnectedListenerSpy = sinon.spy();
+      return connectPromise
+          .then(() => {
+            bt.setDisconnectedListener(disconnectedListenerSpy);
+          })
+          .then(() => {
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          })
+          .then(() => {
+            return assert(disconnectedListenerSpy.calledOnce);
           });
     });
   });
