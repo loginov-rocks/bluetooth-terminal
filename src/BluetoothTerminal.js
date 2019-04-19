@@ -8,9 +8,14 @@ class BluetoothTerminal {
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
    * @param {string} [receiveSeparator='\n'] - Receive separator
    * @param {string} [sendSeparator='\n'] - Send separator
+   * @param {Function|undefined} [onConnected=undefined] - Listener for
+   *                                                       connected event
+   * @param {Function|undefined} [onDisconnected=undefined] - Listener for
+   *                                                          disconnected event
    */
   constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
-      receiveSeparator = '\n', sendSeparator = '\n') {
+      receiveSeparator = '\n', sendSeparator = '\n', onConnected = undefined,
+      onDisconnected = undefined) {
     // Used private variables.
     this._receiveBuffer = ''; // Buffer containing not separated data.
     this._maxCharacteristicValueLength = 20; // Max characteristic value length.
@@ -27,6 +32,8 @@ class BluetoothTerminal {
     this.setCharacteristicUuid(characteristicUuid);
     this.setReceiveSeparator(receiveSeparator);
     this.setSendSeparator(sendSeparator);
+    this.setOnConnected(onConnected);
+    this.setOnDisconnected(onDisconnected);
   }
 
   /**
@@ -99,12 +106,33 @@ class BluetoothTerminal {
   }
 
   /**
+   * Set a listener to be called after a device is connected.
+   * @param {Function|undefined} listener - Listener for connected event
+   */
+  setOnConnected(listener) {
+    this._onConnected = listener;
+  }
+
+  /**
+   * Set a listener to be called after a device is disconnected.
+   * @param {Function|undefined} listener - Listener for disconnected event
+   */
+  setOnDisconnected(listener) {
+    this._onDisconnected = listener;
+  }
+
+  /**
    * Launch Bluetooth device chooser and connect to the selected device.
    * @return {Promise} Promise which will be fulfilled when notifications will
    *                   be started or rejected if something went wrong
    */
   connect() {
-    return this._connectToDevice(this._device);
+    return this._connectToDevice(this._device).
+        then(() => {
+          if (this._onConnected) {
+            this._onConnected();
+          }
+        });
   }
 
   /**
@@ -120,6 +148,10 @@ class BluetoothTerminal {
     }
 
     this._device = null;
+
+    if (this._onDisconnected) {
+      this._onDisconnected();
+    }
   }
 
   /**
@@ -336,8 +368,17 @@ class BluetoothTerminal {
     this._log('"' + device.name +
         '" bluetooth device disconnected, trying to reconnect...');
 
+    if (this._onDisconnected) {
+      this._onDisconnected();
+    }
+
     this._connectDeviceAndCacheCharacteristic(device).
         then((characteristic) => this._startNotifications(characteristic)).
+        then(() => {
+          if (this._onConnected) {
+            this._onConnected();
+          }
+        }).
         catch((error) => this._log(error));
   }
 
