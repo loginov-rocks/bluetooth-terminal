@@ -459,7 +459,7 @@ describe('BluetoothTerminal', () => {
           });
     });
 
-    it('should call onDisconnected listener', () => {
+    it('should call onDisconnected listener on disconnect', () => {
       const onDisconnectedSpy = sinon.spy();
 
       connectPromise.
@@ -467,6 +467,23 @@ describe('BluetoothTerminal', () => {
             bt.setOnDisconnected(onDisconnectedSpy);
             device.dispatchEvent(gattServerDisconnectedEvent);
             return assert(onDisconnectedSpy.calledOnce);
+          });
+    });
+
+    it('should call onConnected listener on reconnect', (done) => {
+      const onConnectedSpy = sinon.spy();
+
+      connectPromise.
+          then(() => {
+            bt.setOnConnected(onConnectedSpy);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise.
+            setTimeout(() => {
+              assert(onConnectedSpy.calledOnce);
+              done();
+            }, 0);
           });
     });
   });
