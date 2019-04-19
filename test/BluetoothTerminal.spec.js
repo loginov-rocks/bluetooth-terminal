@@ -126,19 +126,19 @@ describe('BluetoothTerminal', () => {
         });
   });
 
-  describe('setConnectedListener', () => {
+  describe('setOnConnected', () => {
     it('should set function', () => {
-      const value = () => {};
-      bt.setConnectedListener(value);
-      assert.strictEqual(bt._connectedListener, value);
+      const value = () => undefined;
+      bt.setOnConnected(value);
+      assert.strictEqual(bt._onConnected, value);
     });
   });
 
-  describe('setDisconnectedListener', () => {
+  describe('setOnDisconnected', () => {
     it('should set function', () => {
-      const value = () => {};
-      bt.setDisconnectedListener(value);
-      assert.strictEqual(bt._disconnectedListener, value);
+      const value = () => undefined;
+      bt.setOnDisconnected(value);
+      assert.strictEqual(bt._onDisconnected, value);
     });
   });
 
@@ -168,14 +168,15 @@ describe('BluetoothTerminal', () => {
       return assert.isRejected(bt.connect());
     });
 
-    it('should call connectedListener after establishing connection', () => {
+    it('should call onConnected listener after establishing connection', () => {
       const device = new DeviceMock('Simon', [bt._serviceUuid]);
       navigator.bluetooth = new WebBluetoothMock([device]);
 
-      const connectedListenerSpy = sinon.spy();
-      bt.setConnectedListener(connectedListenerSpy);
+      const onConnectedSpy = sinon.spy();
+      bt.setOnConnected(onConnectedSpy);
+
       return bt.connect().
-          then(() => assert(connectedListenerSpy.calledOnce));
+          then(() => assert(onConnectedSpy.calledOnce));
     });
   });
 
@@ -212,13 +213,13 @@ describe('BluetoothTerminal', () => {
               });
         });
 
-    it('should call disconnectedListener if device was disonnected', () => {
+    it('should call onDisconnected listener if device was disconnected', () => {
       return connectPromise.
           then(() => {
-            const disconnectedListenerSpy = sinon.spy();
-            bt.setDisconnectedListener(disconnectedListenerSpy);
+            const onDisconnectedSpy = sinon.spy();
+            bt.setOnDisconnected(onDisconnectedSpy);
             bt.disconnect();
-            return assert(disconnectedListenerSpy.calledOnce);
+            return assert(onDisconnectedSpy.calledOnce);
           });
     });
   });
@@ -458,17 +459,14 @@ describe('BluetoothTerminal', () => {
           });
     });
 
-    it('should call disconnectedListener', () => {
-      const disconnectedListenerSpy = sinon.spy();
-      return connectPromise
-          .then(() => {
-            bt.setDisconnectedListener(disconnectedListenerSpy);
-          })
-          .then(() => {
+    it('should call onDisconnected listener', () => {
+      const onDisconnectedSpy = sinon.spy();
+
+      connectPromise.
+          then(() => {
+            bt.setOnDisconnected(onDisconnectedSpy);
             device.dispatchEvent(gattServerDisconnectedEvent);
-          })
-          .then(() => {
-            return assert(disconnectedListenerSpy.calledOnce);
+            return assert(onDisconnectedSpy.calledOnce);
           });
     });
   });
