@@ -43,12 +43,11 @@ describe('BluetoothTerminal', () => {
       assert.strictEqual(bt._serviceUuid, value);
     });
 
-    it('should throw an error if value is neither a number nor a string',
-        () => {
-          assert.throws(() => {
-            bt.setServiceUuid(NaN);
-          });
-        });
+    it('should throw an error if value is neither a number nor a string', () => {
+      assert.throws(() => {
+        bt.setServiceUuid(NaN);
+      });
+    });
 
     it('should throw an error if value is 0', () => {
       assert.throws(() => {
@@ -70,12 +69,11 @@ describe('BluetoothTerminal', () => {
       assert.strictEqual(bt._characteristicUuid, value);
     });
 
-    it('should throw an error if value is neither a number nor a string',
-        () => {
-          assert.throws(() => {
-            bt.setCharacteristicUuid(NaN);
-          });
-        });
+    it('should throw an error if value is neither a number nor a string', () => {
+      assert.throws(() => {
+        bt.setCharacteristicUuid(NaN);
+      });
+    });
 
     it('should throw an error if value is 0', () => {
       assert.throws(() => {
@@ -97,12 +95,11 @@ describe('BluetoothTerminal', () => {
       });
     });
 
-    it('should throw an error if value length is more than one character',
-        () => {
-          assert.throws(() => {
-            bt.setReceiveSeparator('\r\n');
-          });
-        });
+    it('should throw an error if value length is more than one character', () => {
+      assert.throws(() => {
+        bt.setReceiveSeparator('\r\n');
+      });
+    });
   });
 
   describe('setSendSeparator', () => {
@@ -118,12 +115,27 @@ describe('BluetoothTerminal', () => {
       });
     });
 
-    it('should throw an error if value length is more than one character',
-        () => {
-          assert.throws(() => {
-            bt.setSendSeparator('\r\n');
-          });
-        });
+    it('should throw an error if value length is more than one character', () => {
+      assert.throws(() => {
+        bt.setSendSeparator('\r\n');
+      });
+    });
+  });
+
+  describe('setOnConnected', () => {
+    it('should set function', () => {
+      const value = () => undefined;
+      bt.setOnConnected(value);
+      assert.strictEqual(bt._onConnected, value);
+    });
+  });
+
+  describe('setOnDisconnected', () => {
+    it('should set function', () => {
+      const value = () => undefined;
+      bt.setOnDisconnected(value);
+      assert.strictEqual(bt._onDisconnected, value);
+    });
   });
 
   describe('connect', () => {
@@ -151,6 +163,17 @@ describe('BluetoothTerminal', () => {
 
       return assert.isRejected(bt.connect());
     });
+
+    it('should call onConnected listener after establishing connection', () => {
+      const device = new DeviceMock('Simon', [bt._serviceUuid]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+
+      const onConnectedSpy = sinon.spy();
+      bt.setOnConnected(onConnectedSpy);
+
+      return bt.connect().
+          then(() => assert(onConnectedSpy.calledOnce));
+    });
   });
 
   describe('disconnect', () => {
@@ -175,21 +198,29 @@ describe('BluetoothTerminal', () => {
           });
     });
 
-    it('should not call `device.gatt.disconnect` if is already disconnected',
-        () => {
-          return connectPromise.
-              then(() => {
-                // Hard mock used here to cover the case.
-                bt._device.gatt.connected = false;
-                bt.disconnect();
-                return assert(disconnectSpy.notCalled);
-              });
-        });
+    it('should not call `device.gatt.disconnect` if is already disconnected', () => {
+      return connectPromise.
+          then(() => {
+            // Hard mock used here to cover the case.
+            bt._device.gatt.connected = false;
+            bt.disconnect();
+            return assert(disconnectSpy.notCalled);
+          });
+    });
+
+    it('should call onDisconnected listener if device was disconnected', () => {
+      return connectPromise.
+          then(() => {
+            const onDisconnectedSpy = sinon.spy();
+            bt.setOnDisconnected(onDisconnectedSpy);
+            bt.disconnect();
+            return assert(onDisconnectedSpy.calledOnce);
+          });
+    });
   });
 
   describe('receive', () => {
-    const characteristicValueChangedEvent = new window.
-        CustomEvent('characteristicvaluechanged');
+    const characteristicValueChangedEvent = new window.CustomEvent('characteristicvaluechanged');
     let connectPromise;
     let receiveSpy;
 
@@ -201,20 +232,19 @@ describe('BluetoothTerminal', () => {
       receiveSpy = sinon.spy(bt, 'receive');
     });
 
-    it('should not be called when a value provided does not have a separator',
-        () => {
-          const value = 'Hello, world!';
+    it('should not be called when a value provided does not have a separator', () => {
+      const value = 'Hello, world!';
 
-          return connectPromise.
-              then(() => {
-                const characteristic = bt._characteristic;
+      return connectPromise.
+          then(() => {
+            const characteristic = bt._characteristic;
 
-                characteristic.value = new TextEncoder().encode(value);
-                characteristic.dispatchEvent(characteristicValueChangedEvent);
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-                return assert(receiveSpy.notCalled);
-              });
-        });
+            return assert(receiveSpy.notCalled);
+          });
+    });
 
     it('should be called when a value provided have a separator', () => {
       const value = 'Hello, world!' + bt._receiveSeparator;
@@ -230,10 +260,10 @@ describe('BluetoothTerminal', () => {
           });
     });
 
-    it('should be called twice when a value provided have three separators, ' +
-        'but there is no data data between the first and second', () => {
-      const value = 'Hello, world!' + bt._receiveSeparator +
-          bt._receiveSeparator + 'Ciao, mondo!' + bt._receiveSeparator;
+    it('should be called twice when a value provided have three separators, but there is no data data between the first'
+        + ' and second', () => {
+      const value = 'Hello, world!' + bt._receiveSeparator + bt._receiveSeparator + 'Ciao, mondo!'
+          + bt._receiveSeparator;
 
       return connectPromise.
           then(() => {
@@ -328,8 +358,7 @@ describe('BluetoothTerminal', () => {
   });
 
   describe('_stopNotifications', () => {
-    const characteristicValueChangedEvent = new window.
-        CustomEvent('characteristicvaluechanged');
+    const characteristicValueChangedEvent = new window.CustomEvent('characteristicvaluechanged');
     let connectPromise;
     let receiveSpy;
 
@@ -372,15 +401,13 @@ describe('BluetoothTerminal', () => {
     let connectDeviceAndCacheCharacteristicSpy;
     let connectPromise;
     let device;
-    const gattServerDisconnectedEvent = new window.
-        CustomEvent('gattserverdisconnected');
+    const gattServerDisconnectedEvent = new window.CustomEvent('gattserverdisconnected');
 
     // Set up Web Bluetooth mock before each test.
     beforeEach(() => {
       device = new DeviceMock('Simon', [bt._serviceUuid]);
       navigator.bluetooth = new WebBluetoothMock([device]);
-      connectDeviceAndCacheCharacteristicSpy = sinon.spy(bt,
-          '_connectDeviceAndCacheCharacteristic');
+      connectDeviceAndCacheCharacteristicSpy = sinon.spy(bt, '_connectDeviceAndCacheCharacteristic');
       connectPromise = bt.connect();
     });
 
@@ -419,6 +446,34 @@ describe('BluetoothTerminal', () => {
             }, 0);
 
             return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
+    });
+
+    it('should call onDisconnected listener on disconnect', () => {
+      const onDisconnectedSpy = sinon.spy();
+
+      connectPromise.
+          then(() => {
+            bt.setOnDisconnected(onDisconnectedSpy);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+            return assert(onDisconnectedSpy.calledOnce);
+          });
+    });
+
+    it('should call onConnected listener on reconnect', (done) => {
+      const onConnectedSpy = sinon.spy();
+
+      connectPromise.
+          then(() => {
+            bt.setOnConnected(onConnectedSpy);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise.
+            setTimeout(() => {
+              assert(onConnectedSpy.calledOnce);
+              done();
+            }, 0);
           });
     });
   });
