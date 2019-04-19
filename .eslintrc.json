@@ -35,8 +35,7 @@
     "max-len": [
       "error",
       {
-        "code": 80,
-        "ignoreComments": true
+        "code": 120
       }
     ],
     "valid-jsdoc": "off"
