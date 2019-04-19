@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const {TextDecoder, TextEncoder} = require('util');
 const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
 
-const BluetoothTerminal = require('../src/BluetoothTerminal');
+const BluetoothTerminal = require('./BluetoothTerminal');
 
 chai.use(chaiAsPromised);
 

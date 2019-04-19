@@ -4,12 +4,15 @@
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "main": "src/BluetoothTerminal.js",
   "scripts": {
-    "ci": "npm run lint && npm run test:coverage",
+    "build": "npm run clean:build && babel src/BluetoothTerminal.ts --extensions .ts --out-dir lib",
+    "ci": "npm run lint && npm run tsc && npm run test:coverage && npm run build",
+    "clean:build": "rm -rf lib",
     "clean:coverage": "rm -rf coverage",
     "coveralls": "npm run test:coverage -- --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && npm run clean:coverage",
-    "lint": "eslint src test",
+    "lint": "eslint --ext ts src",
     "test": "mocha",
-    "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha"
+    "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
+    "tsc": "tsc"
   },
   "repository": {
     "type": "git",
@@ -33,6 +36,14 @@
   },
   "homepage": "https://github.com/loginov-rocks/bluetooth-terminal",
   "devDependencies": {
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.13.6",
+    "@typescript-eslint/eslint-plugin": "^1.6.0",
+    "@typescript-eslint/parser": "^1.6.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.3",
@@ -43,6 +54,7 @@
     "jsdom": "^14.0.0",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2",
+    "typescript": "^3.4.4",
     "web-bluetooth-mock": "^1.0.2"
   }
 }

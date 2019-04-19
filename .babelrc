@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": [
+            "Chrome >= 56",
+            "Opera >= 43"
+          ]
+        }
+      }
+    ],
+    "@babel/preset-typescript"
+  ]
+}

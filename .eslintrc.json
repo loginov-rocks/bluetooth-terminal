@@ -2,16 +2,31 @@
   "env": {
     "browser": true,
     "es6": true,
+    "mocha": true,
     "node": true
   },
   "extends": [
     "eslint:recommended",
-    "google"
+    "google",
+    "plugin:@typescript-eslint/recommended"
   ],
+  "parser": "@typescript-eslint/parser",
   "plugins": [
+    "@typescript-eslint",
     "jsdoc"
   ],
   "rules": {
+    "@typescript-eslint/explicit-function-return-type": [
+      "error",
+      {
+        "allowExpressions": true
+      }
+    ],
+    "@typescript-eslint/indent": [
+      "error",
+      2
+    ],
+    "@typescript-eslint/no-unused-vars": "error",
     "jsdoc/check-alignment": "error",
     "jsdoc/check-examples": "error",
     "jsdoc/check-indentation": "error",
