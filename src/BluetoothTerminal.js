@@ -8,9 +8,15 @@ class BluetoothTerminal {
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
    * @param {string} [receiveSeparator='\n'] - Receive separator
    * @param {string} [sendSeparator='\n'] - Send separator
+   * @param {string} [connectedListener='undefined']
+   * - Listener for connected
+   * @param {string} [disconnectedListener='undefined']
+   * - Listener for disconnected event
    */
   constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
-      receiveSeparator = '\n', sendSeparator = '\n') {
+      receiveSeparator = '\n', sendSeparator = '\n',
+      connectedListener = undefined,
+      disconnectedListener = undefined) {
     // Used private variables.
     this._receiveBuffer = ''; // Buffer containing not separated data.
     this._maxCharacteristicValueLength = 20; // Max characteristic value length.
@@ -27,6 +33,8 @@ class BluetoothTerminal {
     this.setCharacteristicUuid(characteristicUuid);
     this.setReceiveSeparator(receiveSeparator);
     this.setSendSeparator(sendSeparator);
+    this.setConnectedListener(connectedListener);
+    this.setDisconnectedListener(disconnectedListener);
   }
 
   /**
@@ -98,6 +106,24 @@ class BluetoothTerminal {
     this._sendSeparator = separator;
   }
 
+
+  /**
+   * Set a listener to be called after a device is connected
+   * @param {function} listener - Listener for connected event
+   */
+  setConnectedListener(listener) {
+    this._connectedListener = listener;
+  }
+
+  /**
+   * Set a listener to be called after a device is disconnected
+   * @param {function} listener - Listener for disconnected event
+   */
+  setDisconnectedListener(listener) {
+    this._disconnectedListener = listener;
+  }
+
+
   /**
    * Launch Bluetooth device chooser and connect to the selected device.
    * @return {Promise} Promise which will be fulfilled when notifications will
@@ -120,6 +146,10 @@ class BluetoothTerminal {
     }
 
     this._device = null;
+
+    if (this._disconnectedListener) {
+      this._disconnectedListener();
+    }
   }
 
   /**
@@ -304,6 +334,10 @@ class BluetoothTerminal {
 
           characteristic.addEventListener('characteristicvaluechanged',
               this._boundHandleCharacteristicValueChanged);
+
+          if (this._connectedListener) {
+            this._connectedListener();
+          }
         });
   }
 
@@ -335,6 +369,10 @@ class BluetoothTerminal {
 
     this._log('"' + device.name +
         '" bluetooth device disconnected, trying to reconnect...');
+
+    if (this._disconnectedListener) {
+      this._disconnectedListener();
+    }
 
     this._connectDeviceAndCacheCharacteristic(device).
         then((characteristic) => this._startNotifications(characteristic)).

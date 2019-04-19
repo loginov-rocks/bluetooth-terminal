@@ -61,8 +61,10 @@ Bluetooth Terminal class.
   * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator)
   * [setServiceUuid(uuid)](#setserviceuuiduuid)
   * [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
-  * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
+   * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
   * [setSendSeparator(separator)](#setsendseparatorseparator)
+  * [setConnectedListener(listener)](#setconnectedlistenerlistener)
+  * [setDisconnectedListener(listener)](#setdisconnectedlistenerlistener)
   * [connect() ⇒ Promise](#connect--promise)
   * [disconnect()](#disconnect)
   * [receive(data)](#receivedata)
@@ -129,6 +131,29 @@ Set string representing separator for data coming to the connected device, end o
 | Parameter | Type     | Description    |
 | --------- | -------- | -------------- |
 | separator | `string` | Send separator |
+
+---
+
+#### `setConnectedListener(listener)`
+
+Set listener to be called when a device is connected.
+
+**Kind**: instance method of `BluetoothTerminal`
+
+| Parameter | Type       | Description    |
+| --------- | --------   | -------------- |
+| listener  | `function` | Listener       |
+
+
+#### `setDisconnectedListener(listener)`
+
+Set listener to be called when a device is disconnected.
+
+**Kind**: instance method of `BluetoothTerminal`
+
+| Parameter | Type       | Description    |
+| --------- | --------   | -------------- |
+| listener  | `function` | Listener       |
 
 ---
 
