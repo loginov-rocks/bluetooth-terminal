@@ -4,14 +4,13 @@
 class BluetoothTerminal {
   /**
    * Create preconfigured Bluetooth Terminal instance.
-   * @param {!(number|string)} [serviceUuid=0xFFE0] - Service UUID
-   * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID
-   * @param {string} [receiveSeparator='\n'] - Receive separator
-   * @param {string} [sendSeparator='\n'] - Send separator
-   * @param {Function|undefined} [onConnected=undefined] - Listener for
-   *                                                       connected event
-   * @param {Function|undefined} [onDisconnected=undefined] - Listener for
-   *                                                          disconnected event
+   *
+   * @param {!(number|string)} [serviceUuid=0xFFE0] - Service UUID.
+   * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID.
+   * @param {string} [receiveSeparator='\n'] - Receive separator.
+   * @param {string} [sendSeparator='\n'] - Send separator.
+   * @param {Function|undefined} [onConnected=undefined] - Listener for connected event.
+   * @param {Function|undefined} [onDisconnected=undefined] - Listener for disconnected event.
    */
   constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1,
       receiveSeparator = '\n', sendSeparator = '\n', onConnected = undefined,
@@ -38,7 +37,8 @@ class BluetoothTerminal {
 
   /**
    * Set number or string representing service UUID used.
-   * @param {!(number|string)} uuid - Service UUID
+   *
+   * @param {!(number|string)} uuid - Service UUID.
    */
   setServiceUuid(uuid) {
     if (!Number.isInteger(uuid) &&
@@ -55,7 +55,8 @@ class BluetoothTerminal {
 
   /**
    * Set number or string representing characteristic UUID used.
-   * @param {!(number|string)} uuid - Characteristic UUID
+   *
+   * @param {!(number|string)} uuid - Characteristic UUID.
    */
   setCharacteristicUuid(uuid) {
     if (!Number.isInteger(uuid) &&
@@ -73,8 +74,8 @@ class BluetoothTerminal {
   /**
    * Set character representing separator for data coming from the connected
    * device, end of line for example.
-   * @param {string} separator - Receive separator with length equal to one
-   *                             character
+   *
+   * @param {string} separator - Receive separator with length equal to one character.
    */
   setReceiveSeparator(separator) {
     if (!(typeof separator === 'string' || separator instanceof String)) {
@@ -89,9 +90,10 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set string representing separator for data coming to the connected
-   * device, end of line for example.
-   * @param {string} separator - Send separator
+   * Set string representing separator for data coming to the connected device,
+   * end of line for example.
+   *
+   * @param {string} separator - Send separator.
    */
   setSendSeparator(separator) {
     if (!(typeof separator === 'string' || separator instanceof String)) {
@@ -107,7 +109,8 @@ class BluetoothTerminal {
 
   /**
    * Set a listener to be called after a device is connected.
-   * @param {Function|undefined} listener - Listener for connected event
+   *
+   * @param {Function|undefined} listener - Listener for connected event.
    */
   setOnConnected(listener) {
     this._onConnected = listener;
@@ -115,7 +118,8 @@ class BluetoothTerminal {
 
   /**
    * Set a listener to be called after a device is disconnected.
-   * @param {Function|undefined} listener - Listener for disconnected event
+   *
+   * @param {Function|undefined} listener - Listener for disconnected event.
    */
   setOnDisconnected(listener) {
     this._onDisconnected = listener;
@@ -123,8 +127,9 @@ class BluetoothTerminal {
 
   /**
    * Launch Bluetooth device chooser and connect to the selected device.
-   * @return {Promise} Promise which will be fulfilled when notifications will
-   *                   be started or rejected if something went wrong
+   *
+   * @returns {Promise} Promise which will be fulfilled when notifications will
+   * be started or rejected if something went wrong.
    */
   connect() {
     return this._connectToDevice(this._device).
@@ -155,9 +160,10 @@ class BluetoothTerminal {
   }
 
   /**
-   * Data receiving handler which called whenever the new data comes from
-   * the connected device, override it to handle incoming data.
-   * @param {string} data - Data
+   * Data receiving handler which called whenever the new data comes from the
+   * connected device, override it to handle incoming data.
+   *
+   * @param {string} data - Data.
    */
   receive(data) {
     // Handle incoming data.
@@ -165,9 +171,10 @@ class BluetoothTerminal {
 
   /**
    * Send data to the connected device.
-   * @param {string} data - Data
-   * @return {Promise} Promise which will be fulfilled when data will be sent or
-   *                   rejected if something went wrong
+   *
+   * @param {string} data - Data.
+   * @returns {Promise} Promise which will be fulfilled when data will be sent
+   * or rejected if something went wrong.
    */
   send(data) {
     // Convert data to the string using global object.
@@ -213,7 +220,8 @@ class BluetoothTerminal {
 
   /**
    * Get the connected device name.
-   * @return {string} Device name or empty string if not connected
+   *
+   * @returns {string} Device name or empty string if not connected.
    */
   getDeviceName() {
     if (!this._device) {
@@ -225,8 +233,9 @@ class BluetoothTerminal {
 
   /**
    * Connect to device.
-   * @param {Object} device
-   * @return {Promise}
+   *
+   * @param {Object} device - Device.
+   * @returns {Promise} Promise.
    * @private
    */
   _connectToDevice(device) {
@@ -241,7 +250,9 @@ class BluetoothTerminal {
 
   /**
    * Disconnect from device.
-   * @param {Object} device
+   *
+   * @param {Object} device - Device.
+   * @returns {undefined} Undefined.
    * @private
    */
   _disconnectFromDevice(device) {
@@ -267,7 +278,8 @@ class BluetoothTerminal {
 
   /**
    * Request bluetooth device.
-   * @return {Promise}
+   *
+   * @returns {Promise} Promise.
    * @private
    */
   _requestBluetoothDevice() {
@@ -289,8 +301,9 @@ class BluetoothTerminal {
 
   /**
    * Connect device and cache characteristic.
-   * @param {Object} device
-   * @return {Promise}
+   *
+   * @param {Object} device - Device.
+   * @returns {Promise} Promise.
    * @private
    */
   _connectDeviceAndCacheCharacteristic(device) {
@@ -323,8 +336,9 @@ class BluetoothTerminal {
 
   /**
    * Start notifications.
-   * @param {Object} characteristic
-   * @return {Promise}
+   *
+   * @param {Object} characteristic - Characteristic.
+   * @returns {Promise} Promise.
    * @private
    */
   _startNotifications(characteristic) {
@@ -341,8 +355,9 @@ class BluetoothTerminal {
 
   /**
    * Stop notifications.
-   * @param {Object} characteristic
-   * @return {Promise}
+   *
+   * @param {Object} characteristic - Characteristic.
+   * @returns {Promise} Promise.
    * @private
    */
   _stopNotifications(characteristic) {
@@ -359,7 +374,9 @@ class BluetoothTerminal {
 
   /**
    * Handle disconnection.
-   * @param {Object} event
+   *
+   * @param {Object} event - Event.
+   * @returns {undefined} Undefined.
    * @private
    */
   _handleDisconnection(event) {
@@ -384,7 +401,8 @@ class BluetoothTerminal {
 
   /**
    * Handle characteristic value changed.
-   * @param {Object} event
+   *
+   * @param {Object} event - Event.
    * @private
    */
   _handleCharacteristicValueChanged(event) {
@@ -406,9 +424,10 @@ class BluetoothTerminal {
 
   /**
    * Write to characteristic.
-   * @param {Object} characteristic
-   * @param {string} data
-   * @return {Promise}
+   *
+   * @param {Object} characteristic - Characteristic.
+   * @param {string} data - Data.
+   * @returns {Promise} Promise.
    * @private
    */
   _writeToCharacteristic(characteristic, data) {
@@ -417,7 +436,8 @@ class BluetoothTerminal {
 
   /**
    * Log.
-   * @param {Array} messages
+   *
+   * @param {Array} messages - Messages.
    * @private
    */
   _log(...messages) {
@@ -426,9 +446,10 @@ class BluetoothTerminal {
 
   /**
    * Split by length.
-   * @param {string} string
-   * @param {number} length
-   * @return {Array}
+   *
+   * @param {string} string - String.
+   * @param {number} length - Length.
+   * @returns {Array} Array.
    * @private
    */
   static _splitByLength(string, length) {
