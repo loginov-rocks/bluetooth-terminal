@@ -205,7 +205,8 @@ export default class BluetoothTerminal {
     data += this._sendSeparator;
 
     // Split data to chunks by max characteristic value length.
-    const chunks = this.constructor._splitByLength(data, this._maxCharacteristicValueLength);
+    const chunks = (this.constructor as typeof BluetoothTerminal)._splitByLength(data,
+      this._maxCharacteristicValueLength);
 
     // Return rejected promise immediately if there is no connected device.
     if (!this._characteristic) {
@@ -241,7 +242,7 @@ export default class BluetoothTerminal {
    * @returns {string} Device name or empty string if not connected.
    */
   public getDeviceName(): string {
-    if (!this._device) {
+    if (!this._device || !this._device.name) {
       return '';
     }
 
@@ -275,6 +276,10 @@ export default class BluetoothTerminal {
   public _disconnectFromDevice(device: BluetoothDevice | null): void {
     if (!device) {
       return;
+    }
+
+    if (!device.gatt) {
+      throw new Error('GATT is missing');
     }
 
     this._log('Disconnecting from "' + device.name + '" bluetooth device...');
@@ -321,6 +326,10 @@ export default class BluetoothTerminal {
    * @private
    */
   public _connectDeviceAndCacheCharacteristic(device: BluetoothDevice): Promise<BluetoothRemoteGATTCharacteristic> {
+    if (!device.gatt) {
+      return Promise.reject(new Error('GATT is missing'));
+    }
+
     // Check remembered characteristic.
     if (device.gatt.connected && this._characteristic) {
       return Promise.resolve(this._characteristic);
@@ -464,6 +473,12 @@ export default class BluetoothTerminal {
    * @private
    */
   public static _splitByLength(string: string, length: number): string[] {
-    return string.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
+    const matches = string.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
+
+    if (!matches) {
+      return [];
+    }
+
+    return matches;
   }
 }
