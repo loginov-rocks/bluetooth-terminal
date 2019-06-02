@@ -226,7 +226,7 @@ class BluetoothTerminal {
   /**
    * Connect to device.
    *
-   * @param {Object} device - Device.
+   * @param {object} device - Device.
    * @returns {Promise} Promise.
    * @private
    */
@@ -243,7 +243,7 @@ class BluetoothTerminal {
   /**
    * Disconnect from device.
    *
-   * @param {Object} device - Device.
+   * @param {object} device - Device.
    * @returns {undefined} Undefined.
    * @private
    */
@@ -291,7 +291,7 @@ class BluetoothTerminal {
   /**
    * Connect device and cache characteristic.
    *
-   * @param {Object} device - Device.
+   * @param {object} device - Device.
    * @returns {Promise} Promise.
    * @private
    */
@@ -326,7 +326,7 @@ class BluetoothTerminal {
   /**
    * Start notifications.
    *
-   * @param {Object} characteristic - Characteristic.
+   * @param {object} characteristic - Characteristic.
    * @returns {Promise} Promise.
    * @private
    */
@@ -344,7 +344,7 @@ class BluetoothTerminal {
   /**
    * Stop notifications.
    *
-   * @param {Object} characteristic - Characteristic.
+   * @param {object} characteristic - Characteristic.
    * @returns {Promise} Promise.
    * @private
    */
@@ -362,7 +362,7 @@ class BluetoothTerminal {
   /**
    * Handle disconnection.
    *
-   * @param {Object} event - Event.
+   * @param {object} event - Event.
    * @returns {undefined} Undefined.
    * @private
    */
@@ -388,7 +388,7 @@ class BluetoothTerminal {
   /**
    * Handle characteristic value changed.
    *
-   * @param {Object} event - Event.
+   * @param {object} event - Event.
    * @private
    */
   _handleCharacteristicValueChanged(event) {
@@ -411,7 +411,7 @@ class BluetoothTerminal {
   /**
    * Write to characteristic.
    *
-   * @param {Object} characteristic - Characteristic.
+   * @param {object} characteristic - Characteristic.
    * @param {string} data - Data.
    * @returns {Promise} Promise.
    * @private
