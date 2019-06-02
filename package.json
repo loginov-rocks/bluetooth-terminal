@@ -1,6 +1,6 @@
 {
   "name": "bluetooth-terminal",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "main": "src/BluetoothTerminal.js",
   "scripts": {
@@ -37,10 +37,10 @@
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.3",
     "eslint": "^5.16.0",
-    "eslint-config-google": "^0.12.0",
-    "eslint-plugin-jsdoc": "^4.8.3",
+    "eslint-config-google": "^0.13.0",
+    "eslint-plugin-jsdoc": "^7.2.3",
     "istanbul": "^0.4.5",
-    "jsdom": "^14.0.0",
+    "jsdom": "^15.1.1",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2",
     "web-bluetooth-mock": "^1.0.2"
