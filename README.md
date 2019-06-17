@@ -1,7 +1,7 @@
 # bluetooth-terminal
 
 [![NpmVersion](https://img.shields.io/npm/v/bluetooth-terminal.svg)](https://www.npmjs.com/package/bluetooth-terminal)
-[![Build Status](https://travis-ci.org/loginov-rocks/bluetooth-terminal.svg?branch=master)](https://travis-ci.org/loginov-rocks/bluetooth-terminal)
+[![Build Status](https://travis-ci.com/loginov-rocks/bluetooth-terminal.svg?branch=master)](https://travis-ci.com/loginov-rocks/bluetooth-terminal)
 [![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=master)
 [![devDependencies Status](https://david-dm.org/loginov-rocks/bluetooth-terminal/dev-status.svg)](https://david-dm.org/loginov-rocks/bluetooth-terminal?type=dev)
 [![Greenkeeper badge](https://badges.greenkeeper.io/loginov-rocks/bluetooth-terminal.svg)](https://greenkeeper.io/)
