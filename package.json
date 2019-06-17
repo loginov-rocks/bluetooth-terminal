@@ -35,10 +35,10 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "coveralls": "^3.0.3",
+    "coveralls": "^3.0.4",
     "eslint": "^5.16.0",
     "eslint-config-google": "^0.13.0",
-    "eslint-plugin-jsdoc": "^8.0.0",
+    "eslint-plugin-jsdoc": "^8.1.0",
     "istanbul": "^0.4.5",
     "jsdom": "^15.1.1",
     "mocha": "^6.1.4",
