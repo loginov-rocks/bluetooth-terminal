@@ -260,10 +260,10 @@ describe('BluetoothTerminal', () => {
           });
     });
 
-    it('should be called twice when a value provided have three separators, but there is no data data between the first'
-        + ' and second', () => {
-      const value = 'Hello, world!' + bt._receiveSeparator + bt._receiveSeparator + 'Ciao, mondo!'
-          + bt._receiveSeparator;
+    it('should be called twice when a value provided have three separators, but there is no data data between the ' +
+        'first and second', () => {
+      const value = 'Hello, world!' + bt._receiveSeparator + bt._receiveSeparator + 'Ciao, mondo!' +
+          bt._receiveSeparator;
 
       return connectPromise.
           then(() => {
