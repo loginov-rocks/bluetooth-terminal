@@ -40,7 +40,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jsdoc": "^20.1.0",
     "istanbul": "^0.4.5",
-    "jsdom": "^15.1.1",
+    "jsdom": "^16.0.1",
     "mocha": "^6.1.4",
     "sinon": "^8.0.0",
     "web-bluetooth-mock": "^1.0.2"
