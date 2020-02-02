@@ -41,7 +41,7 @@
     "eslint-plugin-jsdoc": "^21.0.0",
     "istanbul": "^0.4.5",
     "jsdom": "^15.1.1",
-    "mocha": "^6.1.4",
+    "mocha": "^7.0.1",
     "sinon": "^8.0.0",
     "web-bluetooth-mock": "^1.0.2"
   }
