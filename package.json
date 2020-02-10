@@ -4,7 +4,7 @@
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "main": "src/BluetoothTerminal.js",
   "scripts": {
-    "ci": "npm run lint && npm run test:coverage",
+    "check": "npm run lint && npm run test:coverage",
     "clean:coverage": "rm -rf coverage",
     "coveralls": "npm run test:coverage -- --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && npm run clean:coverage",
     "lint": "eslint src test",
@@ -40,7 +40,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jsdoc": "^21.0.0",
     "istanbul": "^0.4.5",
-    "jsdom": "^15.1.1",
+    "jsdom": "^16.0.1",
     "mocha": "^7.0.1",
     "sinon": "^8.0.0",
     "web-bluetooth-mock": "^1.0.2"
