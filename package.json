@@ -38,7 +38,7 @@
     "coveralls": "^3.0.4",
     "eslint": "^6.0.1",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-jsdoc": "^22.0.0",
+    "eslint-plugin-jsdoc": "^23.0.0",
     "istanbul": "^0.4.5",
     "jsdom": "^16.0.1",
     "mocha": "^7.0.1",
