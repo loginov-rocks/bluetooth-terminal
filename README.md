@@ -1,10 +1,8 @@
 # bluetooth-terminal
 
-[![NpmVersion](https://img.shields.io/npm/v/bluetooth-terminal.svg)](https://www.npmjs.com/package/bluetooth-terminal)
-[![Build Status](https://travis-ci.com/loginov-rocks/bluetooth-terminal.svg?branch=master)](https://travis-ci.com/loginov-rocks/bluetooth-terminal)
-[![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=master)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=master)
-[![devDependencies Status](https://david-dm.org/loginov-rocks/bluetooth-terminal/dev-status.svg)](https://david-dm.org/loginov-rocks/bluetooth-terminal?type=dev)
-[![Greenkeeper badge](https://badges.greenkeeper.io/loginov-rocks/bluetooth-terminal.svg)](https://greenkeeper.io/)
+[![npm](https://img.shields.io/npm/v/bluetooth-terminal)](https://www.npmjs.com/package/bluetooth-terminal)
+[![CI](https://github.com/loginov-rocks/bluetooth-terminal/workflows/CI/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions)
+[![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=main)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=main)
 
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
 the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
@@ -15,11 +13,11 @@ characteristic that only offered by DIY modules.
 Please check out the [Web-Bluetooth-Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository to see
 implementation details in a real life example.
 
-## Quick start
+## Quick Start
 
 ### Install
 
-You can use the [script](https://github.com/loginov-rocks/bluetooth-terminal/blob/master/src/BluetoothTerminal.js)
+You can use the [script](https://github.com/loginov-rocks/bluetooth-terminal/blob/main/src/BluetoothTerminal.js)
 directly or install it using [npm](https://npmjs.com) and require in your code.
 
 ```sh
@@ -213,7 +211,3 @@ Get the connected device name.
 **Kind**: instance method of `BluetoothTerminal`
 
 **Returns**: `string` - Device name or empty string if not connected
-
-## Contribution
-
-Please use the [dev](https://github.com/loginov-rocks/bluetooth-terminal/tree/dev) branch and feel free to contribute!
