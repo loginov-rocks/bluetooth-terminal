@@ -1,7 +1,8 @@
 # bluetooth-terminal
 
 [![npm](https://img.shields.io/npm/v/bluetooth-terminal)](https://www.npmjs.com/package/bluetooth-terminal)
-[![CI](https://github.com/loginov-rocks/bluetooth-terminal/workflows/CI/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions)
+[![CI](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/ci.yml)
+[![CD](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml)
 [![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=main)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=main)
 
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
