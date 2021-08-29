@@ -1,6 +1,8 @@
 /**
  * Bluetooth Terminal class.
  */
+
+
 class BluetoothTerminal {
   /**
    * Create preconfigured Bluetooth Terminal instance.
@@ -220,7 +222,7 @@ class BluetoothTerminal {
       return '';
     }
 
-    return this._device.name;
+    return console.log(this._device.name)
   }
 
   /**
@@ -274,7 +276,7 @@ class BluetoothTerminal {
    */
   _requestBluetoothDevice() {
     this._log('Requesting bluetooth device...');
-
+    
     return navigator.bluetooth.requestDevice({
       filters: [{services: [this._serviceUuid]}],
     }).
@@ -443,8 +445,27 @@ class BluetoothTerminal {
   }
 }
 
+
+
 // Export class as a module to support requiring.
 /* istanbul ignore next */
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = BluetoothTerminal;
 }
+
+
+const terminal = new BluetoothTerminal(0xFFE0, 0xFFE1, '\n', '\n', undefined, undefined)
+
+
+terminal.receive((data) => {
+  console.log('data', data)
+})
+
+
+terminal.connect().then(() => {
+  console.log('connected', terminal.getDeviceName())
+})
+
+terminal.send('Hey Bro');
+
+terminal.disconnect()
