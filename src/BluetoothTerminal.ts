@@ -5,30 +5,30 @@ export default class BluetoothTerminal {
   /**
    * Buffer containing not separated data.
    */
-  public _receiveBuffer: string = '';
+  private _receiveBuffer: string = '';
   /**
    * Max characteristic value length.
    */
-  public _maxCharacteristicValueLength: number = 20;
+  private _maxCharacteristicValueLength: number = 20;
 
-  public _boundHandleDisconnection: (event: any) => void;
-  public _boundHandleCharacteristicValueChanged: (event: any) => void;
+  private _boundHandleDisconnection: (event: any) => void;
+  private _boundHandleCharacteristicValueChanged: (event: any) => void;
 
-  public _serviceUuid: number | string = 0xFFE0;
-  public _characteristicUuid: number | string = 0xFFE1;
-  public _receiveSeparator: string = '\n';
-  public _sendSeparator: string = '\n';
-  public _onConnected: (() => void) | null = null;
-  public _onDisconnected: (() => void) | null = null;
+  private _serviceUuid: number | string = 0xFFE0;
+  private _characteristicUuid: number | string = 0xFFE1;
+  private _receiveSeparator: string = '\n';
+  private _sendSeparator: string = '\n';
+  private _onConnected: (() => void) | null = null;
+  private _onDisconnected: (() => void) | null = null;
 
   /**
    * Device object cache.
    */
-  public _device: BluetoothDevice | null = null;
+  private _device: BluetoothDevice | null = null;
   /**
    * Characteristic object cache.
    */
-  public _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+  private _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
 
   /**
    * Create preconfigured Bluetooth Terminal instance.
@@ -37,11 +37,11 @@ export default class BluetoothTerminal {
    * @param {!(number|string)} [characteristicUuid=0xFFE1] - Characteristic UUID.
    * @param {string} [receiveSeparator='\n'] - Receive separator.
    * @param {string} [sendSeparator='\n'] - Send separator.
-   * @param {?Function} [onConnected=null] - Listener for connected event.
-   * @param {?Function} [onDisconnected=null] - Listener for disconnected event.
+   * @param {Function|undefined} [onConnected=undefined] - Listener for connected event.
+   * @param {Function|undefined} [onDisconnected=undefined] - Listener for disconnected event.
    */
   public constructor(serviceUuid = 0xFFE0, characteristicUuid = 0xFFE1, receiveSeparator = '\n', sendSeparator = '\n',
-    onConnected = null, onDisconnected = null) {
+    onConnected = undefined, onDisconnected = undefined) {
     // Bound functions used to add and remove appropriate event handlers.
     this._boundHandleDisconnection = this._handleDisconnection.bind(this);
     this._boundHandleCharacteristicValueChanged = this._handleCharacteristicValueChanged.bind(this);
@@ -126,20 +126,18 @@ export default class BluetoothTerminal {
   /**
    * Set a listener to be called after a device is connected.
    *
-   * @param {?Function} listener - Listener for connected event.
-   * @returns {undefined}
+   * @param {Function|undefined} listener - Listener for connected event.
    */
-  public setOnConnected(listener: (() => void) | null): void {
+  public setOnConnected(listener: (() => void) | undefined): void {
     this._onConnected = listener;
   }
 
   /**
    * Set a listener to be called after a device is disconnected.
    *
-   * @param {?Function} listener - Listener for disconnected event.
-   * @returns {undefined}
+   * @param {Function|undefined} listener - Listener for disconnected event.
    */
-  public setOnDisconnected(listener: (() => void) | null): void {
+  public setOnDisconnected(listener: (() => void) | undefined): void {
     this._onDisconnected = listener;
   }
 
@@ -252,11 +250,11 @@ export default class BluetoothTerminal {
   /**
    * Connect to device.
    *
-   * @param {?Object} device - Device.
+   * @param {object} device - Device.
    * @returns {Promise} Promise.
    * @private
    */
-  public _connectToDevice(device: BluetoothDevice | null): Promise<void> {
+  private _connectToDevice(device: BluetoothDevice): Promise<void> {
     return (device ? Promise.resolve(device) : this._requestBluetoothDevice()).
       then((device) => this._connectDeviceAndCacheCharacteristic(device)).
       then((characteristic) => this._startNotifications(characteristic)).
@@ -269,11 +267,10 @@ export default class BluetoothTerminal {
   /**
    * Disconnect from device.
    *
-   * @param {?Object} device - Device.
-   * @returns {undefined}
+   * @param {object} device - Device.
    * @private
    */
-  public _disconnectFromDevice(device: BluetoothDevice | null): void {
+  private _disconnectFromDevice(device: BluetoothDevice): void {
     if (!device) {
       return;
     }
@@ -302,11 +299,11 @@ export default class BluetoothTerminal {
    * @returns {Promise} Promise.
    * @private
    */
-  public _requestBluetoothDevice(): Promise<BluetoothDevice> {
+  private _requestBluetoothDevice(): Promise<BluetoothDevice> {
     this._log('Requesting bluetooth device...');
 
     return navigator.bluetooth.requestDevice({
-      filters: [{services: [this._serviceUuid]}],
+      filters: [{ services: [this._serviceUuid] }],
     }).
       then((device) => {
         this._log('"' + device.name + '" bluetooth device selected');
@@ -325,7 +322,7 @@ export default class BluetoothTerminal {
    * @returns {Promise} Promise.
    * @private
    */
-  public _connectDeviceAndCacheCharacteristic(device: BluetoothDevice): Promise<BluetoothRemoteGATTCharacteristic> {
+  private _connectDeviceAndCacheCharacteristic(device: BluetoothDevice): Promise<BluetoothRemoteGATTCharacteristic> {
     if (!device.gatt) {
       return Promise.reject(new Error('GATT is missing'));
     }
@@ -364,7 +361,7 @@ export default class BluetoothTerminal {
    * @returns {Promise} Promise.
    * @private
    */
-  public _startNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Promise<void> {
+  private _startNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Promise<void> {
     this._log('Starting notifications...');
 
     return characteristic.startNotifications().
@@ -382,7 +379,7 @@ export default class BluetoothTerminal {
    * @returns {Promise} Promise.
    * @private
    */
-  public _stopNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Promise<void> {
+  private _stopNotifications(characteristic: BluetoothRemoteGATTCharacteristic): Promise<void> {
     this._log('Stopping notifications...');
 
     return characteristic.stopNotifications().
@@ -396,11 +393,10 @@ export default class BluetoothTerminal {
   /**
    * Handle disconnection.
    *
-   * @param {Object} event - Event.
-   * @returns {undefined}
+   * @param {object} event - Event.
    * @private
    */
-  public _handleDisconnection(event: any): void {
+  private _handleDisconnection(event: any): void {
     const device = event.target;
 
     this._log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
@@ -425,7 +421,7 @@ export default class BluetoothTerminal {
    * @param {object} event - Event.
    * @private
    */
-  public _handleCharacteristicValueChanged(event: any): void {
+  private _handleCharacteristicValueChanged(event: any): void {
     const value = new TextDecoder().decode(event.target.value);
 
     for (const c of value) {
@@ -450,7 +446,7 @@ export default class BluetoothTerminal {
    * @returns {Promise} Promise.
    * @private
    */
-  public _writeToCharacteristic(characteristic: BluetoothRemoteGATTCharacteristic, data: string): Promise<void> {
+  private _writeToCharacteristic(characteristic: BluetoothRemoteGATTCharacteristic, data: string): Promise<void> {
     return characteristic.writeValue(new TextEncoder().encode(data));
   }
 
@@ -460,7 +456,7 @@ export default class BluetoothTerminal {
    * @param {Array} messages - Messages.
    * @private
    */
-  public _log(...messages: any[]): void {
+  private _log(...messages: any[]): void {
     console.log(...messages); // eslint-disable-line no-console
   }
 
@@ -472,7 +468,7 @@ export default class BluetoothTerminal {
    * @returns {Array} Array.
    * @private
    */
-  public static _splitByLength(string: string, length: number): string[] {
+  private static _splitByLength(string: string, length: number): string[] {
     const matches = string.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
 
     if (!matches) {

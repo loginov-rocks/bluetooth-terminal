@@ -56,6 +56,7 @@ Bluetooth Terminal class.
 
 **Kind**: global class
 
+<!-- no toc -->
 * [BluetoothTerminal](#bluetoothterminal)
   * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnected], [onDisconnected])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator-onconnected-ondisconnected)
   * [setServiceUuid(uuid)](#setserviceuuiduuid)
@@ -76,14 +77,14 @@ Bluetooth Terminal class.
 
 Create preconfigured Bluetooth Terminal instance.
 
-| Parameter            | Type                     | Default  | Description                     |
-| -------------------- | ------------------------ | -------- | ------------------------------- |
-| [serviceUuid]        | `number` &#124; `string` | `0xFFE0` | Service UUID                    |
-| [characteristicUuid] | `number` &#124; `string` | `0xFFE1` | Characteristic UUID             |
-| [receiveSeparator]   | `string`                 | `'\n'`   | Receive separator               |
-| [sendSeparator]      | `string`                 | `'\n'`   | Send separator                  |
-| [onConnected]        | `Function` &#124; `null` | `null`   | Listener for connected event    |
-| [onDisconnected]     | `Function` &#124; `null` | `null`   | Listener for disconnected event |
+| Parameter            | Type                          | Default     | Description                     |
+| -------------------- | ----------------------------- | ----------- | ------------------------------- |
+| [serviceUuid]        | `number` &#124; `string`      | `0xFFE0`    | Service UUID                    |
+| [characteristicUuid] | `number` &#124; `string`      | `0xFFE1`    | Characteristic UUID             |
+| [receiveSeparator]   | `string`                      | `'\n'`      | Receive separator               |
+| [sendSeparator]      | `string`                      | `'\n'`      | Send separator                  |
+| [onConnected]        | `Function` &#124; `undefined` | `undefined` | Listener for connected event    |
+| [onDisconnected]     | `Function` &#124; `undefined` | `undefined` | Listener for disconnected event |
 
 ---
 
@@ -141,9 +142,9 @@ Set a listener to be called after a device is connected.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                     | Description                  |
-| --------- | ------------------------ | ---------------------------- |
-| listener  | `Function` &#124; `null` | Listener for connected event |
+| Parameter | Type                          | Description                  |
+| --------- | ----------------------------- | ---------------------------- |
+| listener  | `Function` &#124; `undefined` | Listener for connected event |
 
 ---
 
@@ -153,9 +154,9 @@ Set a listener to be called after a device is disconnected.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                     | Description                     |
-| --------- | ------------------------ | ------------------------------- |
-| listener  | `Function` &#124; `null` | Listener for disconnected event |
+| Parameter | Type                          | Description                     |
+| --------- | ----------------------------- | ------------------------------- |
+| listener  | `Function` &#124; `undefined` | Listener for disconnected event |
 
 ---
 
