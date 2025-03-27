@@ -1,6 +1,6 @@
 {
   "name": "bluetooth-terminal",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "main": "src/BluetoothTerminal.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "clean:build": "rm -rf lib",
     "clean:coverage": "rm -rf coverage",
     "coveralls": "npm run test:coverage -- --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && npm run clean:coverage",
-    "lint": "eslint --ext ts src",
+    "lint": "eslint --ext ts src test",
     "test": "mocha",
     "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "tsc": "tsc"
@@ -50,14 +50,13 @@
     "@typescript-eslint/parser": "^1.6.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "coveralls": "^3.0.3",
-    "eslint": "^5.16.0",
-    "eslint-config-google": "^0.12.0",
-    "eslint-plugin-jsdoc": "^4.8.3",
+    "eslint": "^7.18.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-jsdoc": "^31.0.5",
     "istanbul": "^0.4.5",
-    "jsdom": "^14.0.0",
-    "mocha": "^6.1.4",
-    "sinon": "^7.3.2",
+    "jsdom": "^16.4.0",
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.3",
     "typescript": "^3.4.4",
     "web-bluetooth-mock": "^1.0.2"
   }
