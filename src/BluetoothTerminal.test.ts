@@ -151,8 +151,8 @@ describe('BluetoothTerminal', () => {
       const requestDeviceSpy = sinon.spy(navigator.bluetooth, 'requestDevice');
 
       return bt.connect().
-        then(() => bt.connect()).
-        then(() => assert(requestDeviceSpy.calledOnce));
+          then(() => bt.connect()).
+          then(() => assert(requestDeviceSpy.calledOnce));
     });
 
     it('should not connect if device not found', () => {
@@ -170,7 +170,7 @@ describe('BluetoothTerminal', () => {
       bt.setOnConnected(onConnectedSpy);
 
       return bt.connect().
-        then(() => assert(onConnectedSpy.calledOnce));
+          then(() => assert(onConnectedSpy.calledOnce));
     });
   });
 
@@ -189,31 +189,34 @@ describe('BluetoothTerminal', () => {
 
     it('should disconnect once', () => {
       return connectPromise.
-        then(() => {
-          bt.disconnect();
-          bt.disconnect(); // Second call should not fire disconnect method.
-          return assert(disconnectSpy.calledOnce);
-        });
+          then(() => {
+            bt.disconnect();
+            bt.disconnect(); // Second call should not fire disconnect method.
+
+            return assert(disconnectSpy.calledOnce);
+          });
     });
 
     it('should not call `device.gatt.disconnect` if is already disconnected', () => {
       return connectPromise.
-        then(() => {
-          // Hard mock used here to cover the case.
-          bt._device.gatt.connected = false;
-          bt.disconnect();
-          return assert(disconnectSpy.notCalled);
-        });
+          then(() => {
+            // Hard mock used here to cover the case.
+            bt._device.gatt.connected = false;
+            bt.disconnect();
+
+            return assert(disconnectSpy.notCalled);
+          });
     });
 
     it('should call onDisconnected listener if device was disconnected', () => {
       return connectPromise.
-        then(() => {
-          const onDisconnectedSpy = sinon.spy();
-          bt.setOnDisconnected(onDisconnectedSpy);
-          bt.disconnect();
-          return assert(onDisconnectedSpy.calledOnce);
-        });
+          then(() => {
+            const onDisconnectedSpy = sinon.spy();
+            bt.setOnDisconnected(onDisconnectedSpy);
+            bt.disconnect();
+
+            return assert(onDisconnectedSpy.calledOnce);
+          });
     });
   });
 
@@ -234,44 +237,44 @@ describe('BluetoothTerminal', () => {
       const value = 'Hello, world!';
 
       return connectPromise.
-        then(() => {
-          const characteristic = bt._characteristic;
+          then(() => {
+            const characteristic = bt._characteristic;
 
-          characteristic.value = new TextEncoder().encode(value);
-          characteristic.dispatchEvent(characteristicValueChangedEvent);
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-          return assert(receiveSpy.notCalled);
-        });
+            return assert(receiveSpy.notCalled);
+          });
     });
 
     it('should be called when a value provided have a separator', () => {
       const value = 'Hello, world!' + bt._receiveSeparator;
 
       return connectPromise.
-        then(() => {
-          const characteristic = bt._characteristic;
+          then(() => {
+            const characteristic = bt._characteristic;
 
-          characteristic.value = new TextEncoder().encode(value);
-          characteristic.dispatchEvent(characteristicValueChangedEvent);
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-          return assert(receiveSpy.calledOnce);
-        });
+            return assert(receiveSpy.calledOnce);
+          });
     });
 
-    it('should be called twice when a value provided have three separators, but there is no data data between the first'
-      + ' and second', () => {
-      const value = 'Hello, world!' + bt._receiveSeparator + bt._receiveSeparator + 'Ciao, mondo!'
-        + bt._receiveSeparator;
+    it('should be called twice when a value provided have three separators, but there is no data data between the ' +
+        'first and second', () => {
+      const value = 'Hello, world!' + bt._receiveSeparator + bt._receiveSeparator + 'Ciao, mondo!' +
+        bt._receiveSeparator;
 
       return connectPromise.
-        then(() => {
-          const characteristic = bt._characteristic;
+          then(() => {
+            const characteristic = bt._characteristic;
 
-          characteristic.value = new TextEncoder().encode(value);
-          characteristic.dispatchEvent(characteristicValueChangedEvent);
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-          return assert(receiveSpy.calledTwice);
-        });
+            return assert(receiveSpy.calledTwice);
+          });
     });
   });
 
@@ -294,11 +297,12 @@ describe('BluetoothTerminal', () => {
       let writeValueSpy;
 
       return bt.connect().
-        then(() => {
-          writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
-          return bt.send('Hello, world!');
-        }).
-        then(() => assert(writeValueSpy.calledOnce));
+          then(() => {
+            writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
+
+            return bt.send('Hello, world!');
+          }).
+          then(() => assert(writeValueSpy.calledOnce));
     });
 
     it('should write long data to characteristic consistently', () => {
@@ -310,12 +314,13 @@ describe('BluetoothTerminal', () => {
       }
 
       return bt.connect().
-        then(() => {
-          writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
-          return bt.send(data);
-        }).
-        then(() => assert.strictEqual(writeValueSpy.callCount,
-          Math.ceil(data.length / bt._maxCharacteristicValueLength)));
+          then(() => {
+            writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
+
+            return bt.send(data);
+          }).
+          then(() => assert.strictEqual(writeValueSpy.callCount,
+              Math.ceil(data.length / bt._maxCharacteristicValueLength)));
     });
 
     it('should reject if device suddenly disconnects', () => {
@@ -327,12 +332,12 @@ describe('BluetoothTerminal', () => {
       }
 
       return bt.connect().
-        then(() => {
-          writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
-          bt.send(data);
-          bt.disconnect();
-        }).
-        then(() => assert(writeValueSpy.calledOnce));
+          then(() => {
+            writeValueSpy = sinon.spy(bt._characteristic, 'writeValue');
+            bt.send(data);
+            bt.disconnect();
+          }).
+          then(() => assert(writeValueSpy.calledOnce));
     });
   });
 
@@ -351,7 +356,7 @@ describe('BluetoothTerminal', () => {
       const value = 'Simon';
 
       return bt.connect().
-        then(() => assert.strictEqual(bt.getDeviceName(), value));
+          then(() => assert.strictEqual(bt.getDeviceName(), value));
     });
   });
 
@@ -374,24 +379,24 @@ describe('BluetoothTerminal', () => {
       let characteristic;
 
       return connectPromise.
-        then(() => {
-          characteristic = bt._characteristic;
+          then(() => {
+            characteristic = bt._characteristic;
 
-          characteristic.value = new TextEncoder().encode(value);
-          characteristic.dispatchEvent(characteristicValueChangedEvent);
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-          return assert(receiveSpy.calledOnce);
-        }).
-        then(() => {
-          // Call for private method only to test it.
-          return bt._stopNotifications(bt._characteristic);
-        }).
-        then(() => {
-          characteristic.value = new TextEncoder().encode(value);
-          characteristic.dispatchEvent(characteristicValueChangedEvent);
+            return assert(receiveSpy.calledOnce);
+          }).
+          then(() => {
+            // Call for private method only to test it.
+            return bt._stopNotifications(bt._characteristic);
+          }).
+          then(() => {
+            characteristic.value = new TextEncoder().encode(value);
+            characteristic.dispatchEvent(characteristicValueChangedEvent);
 
-          return assert(receiveSpy.calledOnce); // Remains the same.
-        });
+            return assert(receiveSpy.calledOnce); // Remains the same.
+          });
     });
   });
 
@@ -411,15 +416,15 @@ describe('BluetoothTerminal', () => {
 
     it('should reconnect', () => {
       return connectPromise.
-        then(() => {
-          return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
-        }).
-        then(() => {
-          device.dispatchEvent(gattServerDisconnectedEvent);
-        }).
-        then(() => {
-          return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
-        });
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
     });
 
     it('should fail to reconnect and call `log` with the error', (done) => {
@@ -427,52 +432,53 @@ describe('BluetoothTerminal', () => {
       const logSpy = sinon.spy(bt, '_log');
 
       connectPromise.
-        then(() => {
-          return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
-        }).
-        then(() => {
-          // Simulate disconnection.
-          device.gatt.connected = false;
-          device.gatt.connect = () => Promise.reject(error);
-          device.dispatchEvent(gattServerDisconnectedEvent);
-        }).
-        then(() => {
-          // Make sure the assert will be executed after the promise.
-          setTimeout(() => {
-            assert(logSpy.lastCall.calledWith(error));
-            done();
-          }, 0);
+          then(() => {
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledOnce);
+          }).
+          then(() => {
+            // Simulate disconnection.
+            device.gatt.connected = false;
+            device.gatt.connect = () => Promise.reject(error);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise.
+            setTimeout(() => {
+              assert(logSpy.lastCall.calledWith(error));
+              done();
+            }, 0);
 
-          return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
-        });
+            return assert(connectDeviceAndCacheCharacteristicSpy.calledTwice);
+          });
     });
 
     it('should call onDisconnected listener on disconnect', () => {
       const onDisconnectedSpy = sinon.spy();
 
       connectPromise.
-        then(() => {
-          bt.setOnDisconnected(onDisconnectedSpy);
-          device.dispatchEvent(gattServerDisconnectedEvent);
-          return assert(onDisconnectedSpy.calledOnce);
-        });
+          then(() => {
+            bt.setOnDisconnected(onDisconnectedSpy);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+
+            return assert(onDisconnectedSpy.calledOnce);
+          });
     });
 
     it('should call onConnected listener on reconnect', (done) => {
       const onConnectedSpy = sinon.spy();
 
       connectPromise.
-        then(() => {
-          bt.setOnConnected(onConnectedSpy);
-          device.dispatchEvent(gattServerDisconnectedEvent);
-        }).
-        then(() => {
-          // Make sure the assert will be executed after the promise.
-          setTimeout(() => {
-            assert(onConnectedSpy.calledOnce);
-            done();
-          }, 0);
-        });
+          then(() => {
+            bt.setOnConnected(onConnectedSpy);
+            device.dispatchEvent(gattServerDisconnectedEvent);
+          }).
+          then(() => {
+            // Make sure the assert will be executed after the promise.
+            setTimeout(() => {
+              assert(onConnectedSpy.calledOnce);
+              done();
+            }, 0);
+          });
     });
   });
 

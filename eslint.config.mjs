@@ -12,4 +12,11 @@ export default tseslint.config(
     google,
     tseslint.configs.recommended,
     jsdoc.configs['flat/recommended-typescript'],
+    {
+      rules: {
+        'max-len': ['error', {
+          code: 120,
+        }],
+      },
+    },
 );
