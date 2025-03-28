@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "npm run clean:build && babel src/BluetoothTerminal.ts --extensions .ts --out-dir lib",
+    "build:types": "tsc --emitDeclarationOnly",
     "ci": "npm run lint && npm run tsc && npm run test:coverage && npm run build",
     "clean:build": "rm -rf lib",
     "clean:coverage": "rm -rf coverage",
@@ -16,7 +17,7 @@
     "lint": "eslint",
     "test": "mocha",
     "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
-    "tsc": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

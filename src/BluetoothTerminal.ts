@@ -32,12 +32,13 @@ export default class BluetoothTerminal {
 
   /**
    * Create preconfigured Bluetooth Terminal instance.
-   * @param [serviceUuid] Service UUID
-   * @param [characteristicUuid] Characteristic UUID
-   * @param [receiveSeparator] Receive separator
-   * @param [sendSeparator] Send separator
-   * @param [onConnected] Listener for connected event
-   * @param [onDisconnected] Listener for disconnected event
+   * @param [serviceUuid]         Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
+   * @param [characteristicUuid]  Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit
+   *                                UUID)
+   * @param [receiveSeparator]    Optional receive separator with length equal to one character
+   * @param [sendSeparator]       Optional send separator with length equal to one character
+   * @param [onConnected]         Optional callback for connection completion
+   * @param [onDisconnected]      Optional callback for disconnection
    */
   public constructor(
       serviceUuid: number | string = 0xFFE0,
@@ -62,15 +63,20 @@ export default class BluetoothTerminal {
 
   /**
    * Set number or string representing service UUID used.
-   * @param uuid Service UUID
+   * @param uuid Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/BluetoothUUID
    */
   public setServiceUuid(uuid: number | string): void {
-    if (!Number.isInteger(uuid) && !(typeof uuid === 'string' || uuid instanceof String)) {
-      throw new Error('UUID type is neither a number nor a string');
+    if (!Number.isInteger(uuid) && typeof uuid !== 'string') {
+      throw new Error('Service UUID must be either an integer or a string');
     }
 
-    if (!uuid) {
-      throw new Error('UUID cannot be a null');
+    if (uuid === 0) {
+      throw new Error('Service UUID cannot be zero');
+    }
+
+    if (typeof uuid === 'string' && uuid.trim() === '') {
+      throw new Error('Service UUID cannot be an empty string');
     }
 
     this._serviceUuid = uuid;
@@ -78,15 +84,20 @@ export default class BluetoothTerminal {
 
   /**
    * Set number or string representing characteristic UUID used.
-   * @param uuid Characteristic UUID
+   * @param uuid Characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/BluetoothUUID
    */
   public setCharacteristicUuid(uuid: number | string): void {
-    if (!Number.isInteger(uuid) && !(typeof uuid === 'string' || uuid instanceof String)) {
-      throw new Error('UUID type is neither a number nor a string');
+    if (!Number.isInteger(uuid) && typeof uuid !== 'string') {
+      throw new Error('Characteristic UUID must be either an integer or a string');
     }
 
-    if (!uuid) {
-      throw new Error('UUID cannot be a null');
+    if (uuid === 0) {
+      throw new Error('Characteristic UUID cannot be zero');
+    }
+
+    if (typeof uuid === 'string' && uuid.trim() === '') {
+      throw new Error('Characteristic UUID cannot be an empty string');
     }
 
     this._characteristicUuid = uuid;
@@ -97,12 +108,12 @@ export default class BluetoothTerminal {
    * @param separator Receive separator with length equal to one character
    */
   public setReceiveSeparator(separator: string): void {
-    if (!(typeof separator === 'string' || separator instanceof String)) {
-      throw new Error('Separator type is not a string');
+    if (typeof separator !== 'string') {
+      throw new Error('Receive separator must be a string');
     }
 
     if (separator.length !== 1) {
-      throw new Error('Separator length must be equal to one character');
+      throw new Error('Receive separator length must be equal to one character');
     }
 
     this._receiveSeparator = separator;
@@ -110,31 +121,31 @@ export default class BluetoothTerminal {
 
   /**
    * Set string representing separator for data coming to the connected device, end of line for example.
-   * @param separator Send separator
+   * @param separator Send separator with length equal to one character
    */
   public setSendSeparator(separator: string): void {
-    if (!(typeof separator === 'string' || separator instanceof String)) {
-      throw new Error('Separator type is not a string');
+    if (typeof separator !== 'string') {
+      throw new Error('Send separator must be a string');
     }
 
     if (separator.length !== 1) {
-      throw new Error('Separator length must be equal to one character');
+      throw new Error('Send separator length must be equal to one character');
     }
 
     this._sendSeparator = separator;
   }
 
   /**
-   * Set a listener to be called after a device is connected.
-   * @param [listener] Listener for connected event
+   * Set a listener that will be called after the device is fully connected and ready for communication.
+   * @param [listener] Callback for connection completion; omit or pass null/undefined to remove
    */
   public setOnConnected(listener?: (() => void) | null): void {
     this._onConnected = listener || null;
   }
 
   /**
-   * Set a listener to be called after a device is disconnected.
-   * @param [listener] Listener for disconnected event
+   * Set a listener that will be called after the device is disconnected.
+   * @param [listener] Callback for disconnection; omit or pass null/undefined to remove
    */
   public setOnDisconnected(listener?: (() => void) | null): void {
     this._onDisconnected = listener || null;
@@ -198,8 +209,7 @@ export default class BluetoothTerminal {
     data += this._sendSeparator;
 
     // Split data to chunks by max characteristic value length.
-    const chunks = (this.constructor as typeof BluetoothTerminal)._splitByLength(data,
-        this._maxCharacteristicValueLength);
+    const chunks = this.constructor._splitByLength(data, this._maxCharacteristicValueLength);
 
     // Return rejected promise immediately if there is no connected device.
     if (!this._characteristic) {

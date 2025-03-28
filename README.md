@@ -63,8 +63,8 @@ Bluetooth Terminal class.
   * [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
   * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
   * [setSendSeparator(separator)](#setsendseparatorseparator)
-  * [setOnConnected(listener)](#setonconnectedlistener)
-  * [setOnDisconnected(listener)](#setondisconnectedlistener)
+  * [setOnConnected([listener])](#setonconnectedlistener)
+  * [setOnDisconnected([listener])](#setondisconnectedlistener)
   * [connect() ⇒ Promise](#connect--promise)
   * [disconnect()](#disconnect)
   * [receive(data)](#receivedata)
@@ -77,14 +77,14 @@ Bluetooth Terminal class.
 
 Create preconfigured Bluetooth Terminal instance.
 
-| Parameter            | Type                          | Default     | Description                     |
-| -------------------- | ----------------------------- | ----------- | ------------------------------- |
-| [serviceUuid]        | `number` &#124; `string`      | `0xFFE0`    | Service UUID                    |
-| [characteristicUuid] | `number` &#124; `string`      | `0xFFE1`    | Characteristic UUID             |
-| [receiveSeparator]   | `string`                      | `'\n'`      | Receive separator               |
-| [sendSeparator]      | `string`                      | `'\n'`      | Send separator                  |
-| [onConnected]        | `Function` &#124; `undefined` | `undefined` | Listener for connected event    |
-| [onDisconnected]     | `Function` &#124; `undefined` | `undefined` | Listener for disconnected event |
+| Parameter            | Type                                        | Default     | Description                                                                              |
+| -------------------- | ------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| [serviceUuid]        | `number` &#124; `string`                    | `0xFFE0`    | Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)        |
+| [characteristicUuid] | `number` &#124; `string`                    | `0xFFE1`    | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| [receiveSeparator]   | `string`                                    | `'\n'`      | Optional receive separator with length equal to one character                            |
+| [sendSeparator]      | `string`                                    | `'\n'`      | Optional send separator with length equal to one character                               |
+| [onConnected]        | `Function` &#124; `null` &#124; `undefined` | `undefined` | Optional callback for connection completion                                              |
+| [onDisconnected]     | `Function` &#124; `null` &#124; `undefined` | `undefined` | Optional callback for disconnection                                                      |
 
 ---
 
@@ -94,9 +94,9 @@ Set number or string representing service UUID used.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                     | Description  |
-| --------- | ------------------------ | ------------ |
-| uuid      | `number` &#124; `string` | Service UUID |
+| Parameter | Type                     | Description                                                              |
+| --------- | ------------------------ | ------------------------------------------------------------------------ |
+| uuid      | `number` &#124; `string` | Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
 
 ---
 
@@ -106,9 +106,9 @@ Set number or string representing characteristic UUID used.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                     | Description         |
-| --------- | ------------------------ | ------------------- |
-| uuid      | `number` &#124; `string` | Characteristic UUID |
+| Parameter | Type                     | Description                                                                     |
+| --------- | ------------------------ | ------------------------------------------------------------------------------- |
+| uuid      | `number` &#124; `string` | Characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
 
 ---
 
@@ -118,9 +118,9 @@ Set character representing separator for data coming from the connected device, 
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type     | Description                                |
-| --------- | -------- | ------------------------------------------ |
-| separator | `string` | Receive separator with length equal to one |
+| Parameter | Type     | Description                                          |
+| --------- | -------- | ---------------------------------------------------- |
+| separator | `string` | Receive separator with length equal to one character |
 
 ---
 
@@ -130,33 +130,33 @@ Set string representing separator for data coming to the connected device, end o
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type     | Description    |
-| --------- | -------- | -------------- |
-| separator | `string` | Send separator |
+| Parameter | Type     | Description                                       |
+| --------- | -------- | ------------------------------------------------- |
+| separator | `string` | Send separator with length equal to one character |
 
 ---
 
-#### `setOnConnected(listener)`
+#### `setOnConnected([listener])`
 
-Set a listener to be called after a device is connected.
+Set a listener that will be called after the device is fully connected and ready for communication.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                          | Description                  |
-| --------- | ----------------------------- | ---------------------------- |
-| listener  | `Function` &#124; `undefined` | Listener for connected event |
+| Parameter  | Type                                        | Description                                                               |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------------------- |
+| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for connection completion; omit or pass null/undefined to remove |
 
 ---
 
-#### `setOnDisconnected(listener)`
+#### `setOnDisconnected([listener])`
 
-Set a listener to be called after a device is disconnected.
+Set a listener that will be called after the device is disconnected.
 
 **Kind**: instance method of `BluetoothTerminal`
 
-| Parameter | Type                          | Description                     |
-| --------- | ----------------------------- | ------------------------------- |
-| listener  | `Function` &#124; `undefined` | Listener for disconnected event |
+| Parameter  | Type                                        | Description                                                       |
+| ---------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for disconnection; omit or pass null/undefined to remove |
 
 ---
 
@@ -213,3 +213,22 @@ Get the connected device name.
 **Kind**: instance method of `BluetoothTerminal`
 
 **Returns**: `string` - Device name or empty string if not connected
+
+## Development
+
+Uses:
+
+- Node.js v22
+- ESLint for linting: `eslint`, `@eslint/js`, `eslint-config-google`, `typescript-eslint`, `eslint-plugin-jsdoc`
+- TypeScript for type checks and building declaration: `typescript`
+
+Scripts:
+
+- `npm run lint` - linting
+- `npm run typecheck` - run TypeScript type checks
+- `npm run build:types` - build TypeScript declaration
+
+### TODO
+
+1. Complete refactoring to async/await
+2. Remove `lib/BluetoothTerminal.test.d.ts` after building TypeScript declarations
