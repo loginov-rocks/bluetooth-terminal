@@ -54,8 +54,6 @@ terminal.disconnect();
 
 Bluetooth Terminal class.
 
-**Kind**: global class
-
 <!-- no toc -->
 * [BluetoothTerminal](#bluetoothterminal)
   * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnected], [onDisconnected])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator-onconnected-ondisconnected)
@@ -92,8 +90,6 @@ Create preconfigured Bluetooth Terminal instance.
 
 Set number or string representing service UUID used.
 
-**Kind**: instance method of `BluetoothTerminal`
-
 | Parameter | Type                     | Description                                                              |
 | --------- | ------------------------ | ------------------------------------------------------------------------ |
 | uuid      | `number` &#124; `string` | Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
@@ -103,8 +99,6 @@ Set number or string representing service UUID used.
 #### `setCharacteristicUuid(uuid)`
 
 Set number or string representing characteristic UUID used.
-
-**Kind**: instance method of `BluetoothTerminal`
 
 | Parameter | Type                     | Description                                                                     |
 | --------- | ------------------------ | ------------------------------------------------------------------------------- |
@@ -116,8 +110,6 @@ Set number or string representing characteristic UUID used.
 
 Set character representing separator for data coming from the connected device, end of line for example.
 
-**Kind**: instance method of `BluetoothTerminal`
-
 | Parameter | Type     | Description                                          |
 | --------- | -------- | ---------------------------------------------------- |
 | separator | `string` | Receive separator with length equal to one character |
@@ -128,8 +120,6 @@ Set character representing separator for data coming from the connected device, 
 
 Set string representing separator for data coming to the connected device, end of line for example.
 
-**Kind**: instance method of `BluetoothTerminal`
-
 | Parameter | Type     | Description                                       |
 | --------- | -------- | ------------------------------------------------- |
 | separator | `string` | Send separator with length equal to one character |
@@ -138,21 +128,17 @@ Set string representing separator for data coming to the connected device, end o
 
 #### `setOnConnected([listener])`
 
-Set a listener that will be called after the device is fully connected and ready for communication.
-
-**Kind**: instance method of `BluetoothTerminal`
+Set a listener that will be called after the device is fully connected and communication has started.
 
 | Parameter  | Type                                        | Description                                                               |
 | ---------- | ------------------------------------------- | ------------------------------------------------------------------------- |
-| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for connection completion; omit or pass null/undefined to remove |
+| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for successful connection; omit or pass null/undefined to remove |
 
 ---
 
 #### `setOnDisconnected([listener])`
 
 Set a listener that will be called after the device is disconnected.
-
-**Kind**: instance method of `BluetoothTerminal`
 
 | Parameter  | Type                                        | Description                                                       |
 | ---------- | ------------------------------------------- | ----------------------------------------------------------------- |
@@ -162,57 +148,52 @@ Set a listener that will be called after the device is disconnected.
 
 #### `connect()` ⇒ `Promise`
 
-Launch Bluetooth device chooser and connect to the selected device.
+Launch the browser Bluetooth device picker, connect to the selected device, and start communication.
 
-**Kind**: instance method of `BluetoothTerminal`
+If set, the `onConnected()` callback function will be executed after the connection starts.
 
-**Returns**: `Promise` - Promise which will be fulfilled when notifications will be started or rejected if something
-went wrong
+**Returns**: `Promise` - Promise that resolves when the device is fully connected and communication started, or rejects
+if an error occurs.
 
 ---
 
 #### `disconnect()`
 
-Disconnect from the connected device.
+Disconnect from the currently connected device.
 
-**Kind**: instance method of `BluetoothTerminal`
+If set, the `onDisconnected()` callback function will be executed after the disconnection.
 
 ---
 
 #### `receive(data)`
 
-Data receiving handler which called whenever the new data comes from the connected device, override it to handle
-incoming data.
+Handler for incoming data from the connected device. Override this method to process data received from the connected
+device.
 
-**Kind**: instance method of `BluetoothTerminal`
-
-| Parameter | Type     | Description |
-| --------- | -------- | ----------- |
-| data      | `string` | Data        |
+| Parameter | Type     | Description                                    |
+| --------- | -------- | ---------------------------------------------- |
+| data      | `string` | String data received from the connected device |
 
 ---
 
 #### `send(data)` ⇒ `Promise`
 
-Send data to the connected device.
+Send data to the connected device. The data is automatically split into chunks if it exceeds the maximum characteristic
+value length.
 
-**Kind**: instance method of `BluetoothTerminal`
+**Returns**: `Promise` - Promise that resolves when all data has been sent, or rejects if an error occurs
 
-**Returns**: `Promise` - Promise which will be fulfilled when data will be sent or rejected if something went wrong
-
-| Parameter | Type     | Description |
-| --------- | -------- | ----------- |
-| data      | `string` | Data        |
+| Parameter | Type     | Description                                    |
+| --------- | -------- | ---------------------------------------------- |
+| data      | `string` | String data to be sent to the connected device |
 
 ---
 
 #### `getDeviceName()` ⇒ `string`
 
-Get the connected device name.
+Get the name of the currently connected device.
 
-**Kind**: instance method of `BluetoothTerminal`
-
-**Returns**: `string` - Device name or empty string if not connected
+**Returns**: `string` - Name of the connected device or an empty string if no device is connected
 
 ## Development
 

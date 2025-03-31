@@ -136,8 +136,8 @@ export default class BluetoothTerminal {
   }
 
   /**
-   * Set a listener that will be called after the device is fully connected and ready for communication.
-   * @param [listener] Callback for connection completion; omit or pass null/undefined to remove
+   * Set a listener that will be called after the device is fully connected and communication has started.
+   * @param [listener] Callback for successful connection; omit or pass null/undefined to remove
    */
   public setOnConnected(listener?: (() => void) | null): void {
     this._onConnected = listener || null;
@@ -152,10 +152,16 @@ export default class BluetoothTerminal {
   }
 
   /**
-   * Launch Bluetooth device chooser and connect to the selected device.
-   * @returns Promise which will be fulfilled when notifications will be started or rejected if something went wrong.
+   * Launch the browser Bluetooth device picker, connect to the selected device, and start communication.
+   * If set, the `onConnected()` callback function will be executed after the connection starts.
+   * @returns Promise that resolves when the device is fully connected and communication started, or rejects if an
+   *   error occurs.
    */
   public async connect(): Promise<void> {
+    if (!this._device) {
+      this._device = await this._requestBluetoothDevice();
+    }
+
     await this._connectToDevice(this._device);
 
     if (this._onConnected) {
@@ -164,9 +170,14 @@ export default class BluetoothTerminal {
   }
 
   /**
-   * Disconnect from the connected device.
+   * Disconnect from the currently connected device.
+   * If set, the `onDisconnected()` callback function will be executed after the disconnection.
    */
   public disconnect(): void {
+    if (!this._device) {
+      throw new Error('No connected device');
+    }
+
     this._disconnectFromDevice(this._device);
 
     if (this._characteristic) {
@@ -183,9 +194,9 @@ export default class BluetoothTerminal {
   }
 
   /**
-   * Data receiving handler which called whenever the new data comes from the connected device, override it to handle
-   * incoming data.
-   * @param data Data
+   * Handler for incoming data from the connected device. Override this method to process data received from the
+   * connected device.
+   * @param data String data received from the connected device
    */
   public receive(data: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
     // Handle incoming data.
@@ -193,9 +204,10 @@ export default class BluetoothTerminal {
 
   // TODO: Improve readability and consistency by refactoring to async/await.
   /**
-   * Send data to the connected device.
-   * @param data Data
-   * @returns Promise which will be fulfilled when data will be sent or rejected if something went wrong.
+   * Send data to the connected device. The data is automatically split into chunks if it exceeds the maximum
+   * characteristic value length.
+   * @param data String data to be sent to the connected device
+   * @returns Promise that resolves when all data has been sent, or rejects if an error occurs
    */
   public send(data: string): Promise<void> {
     // Convert data to the string using global object.
@@ -209,7 +221,7 @@ export default class BluetoothTerminal {
     data += this._sendSeparator;
 
     // Split data to chunks by max characteristic value length.
-    const chunks = this.constructor._splitByLength(data, this._maxCharacteristicValueLength);
+    const chunks = BluetoothTerminal._splitByLength(data, this._maxCharacteristicValueLength);
 
     // Return rejected promise immediately if there is no connected device.
     if (!this._characteristic) {
@@ -245,8 +257,8 @@ export default class BluetoothTerminal {
   }
 
   /**
-   * Get the connected device name.
-   * @returns Device name or empty string if not connected.
+   * Get the name of the currently connected device.
+   * @returns Name of the connected device or an empty string if no device is connected
    */
   public getDeviceName(): string {
     if (!this._device || !this._device.name) {
@@ -263,8 +275,7 @@ export default class BluetoothTerminal {
    * @returns Promise.
    */
   private _connectToDevice(device: BluetoothDevice): Promise<void> {
-    return (device ? Promise.resolve(device) : this._requestBluetoothDevice()).
-        then((device) => this._connectDeviceAndCacheCharacteristic(device)).
+    return this._connectDeviceAndCacheCharacteristic(device).
         then((characteristic) => this._startNotifications(characteristic)).
         catch((error) => {
           this._log(error);
@@ -278,10 +289,6 @@ export default class BluetoothTerminal {
    * @param device Device
    */
   private _disconnectFromDevice(device: BluetoothDevice): void {
-    if (!device) {
-      return;
-    }
-
     if (!device.gatt) {
       throw new Error('GATT is missing');
     }
@@ -316,6 +323,7 @@ export default class BluetoothTerminal {
 
     this._log('"' + device.name + '" bluetooth device selected');
 
+    // TODO: Check if needed.
     this._device = device; // Remember device.
     this._device.addEventListener('gattserverdisconnected', this._boundHandleDisconnection);
 
