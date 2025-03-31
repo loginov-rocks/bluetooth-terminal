@@ -202,12 +202,17 @@ Uses:
 - Node.js v22
 - ESLint for linting: `eslint`, `@eslint/js`, `eslint-config-google`, `typescript-eslint`, `eslint-plugin-jsdoc`
 - TypeScript for type checks and building declaration: `typescript`
+- Babel for building: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`
 
 Scripts:
 
 - `npm run lint` - linting
 - `npm run typecheck` - run TypeScript type checks
 - `npm run build:types` - build TypeScript declaration
+- `npm run build:code` - build code
+- `npm run build` - build library
+- `npm run clean:build` - clean output directory
+- `npm run clean:coverage` - clean coverage directory
 
 ### TODO
 

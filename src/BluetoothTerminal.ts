@@ -1,19 +1,7 @@
 /**
  * Bluetooth Terminal class.
  */
-export default class BluetoothTerminal {
-  /**
-   * Buffer containing not separated data.
-   */
-  private _receiveBuffer: string = '';
-  /**
-   * Max characteristic value length.
-   */
-  private _maxCharacteristicValueLength: number = 20;
-
-  private _boundHandleDisconnection: EventListenerOrEventListenerObject;
-  private _boundHandleCharacteristicValueChanged: EventListenerOrEventListenerObject;
-
+class BluetoothTerminal {
   private _serviceUuid: number | string = 0xFFE0;
   private _characteristicUuid: number | string = 0xFFE1;
   private _receiveSeparator: string = '\n';
@@ -22,13 +10,27 @@ export default class BluetoothTerminal {
   private _onDisconnected: (() => void) | null = null;
 
   /**
+   * Buffer containing not separated data.
+   */
+  private _receiveBuffer: string = '';
+
+  /**
+   * Max characteristic value length.
+   */
+  private _maxCharacteristicValueLength: number = 20;
+
+  /**
    * Device object cache.
    */
   private _device: BluetoothDevice | null = null;
+
   /**
    * Characteristic object cache.
    */
   private _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+
+  private _boundHandleDisconnection: EventListenerOrEventListenerObject;
+  private _boundHandleCharacteristicValueChanged: EventListenerOrEventListenerObject;
 
   /**
    * Create preconfigured Bluetooth Terminal instance.
@@ -402,7 +404,8 @@ export default class BluetoothTerminal {
    * @param event Event
    */
   private _handleDisconnection(event: Event): void {
-    const device = event.target;
+    // TODO: Validate `event.target` type.
+    const device = event.target as BluetoothDevice;
 
     this._log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
@@ -427,7 +430,8 @@ export default class BluetoothTerminal {
    * @param event Event
    */
   private _handleCharacteristicValueChanged(event: Event): void {
-    const value = new TextDecoder().decode(event.target.value);
+    // TODO: Validate `event.target` type.
+    const value = new TextDecoder().decode((event.target as BluetoothRemoteGATTCharacteristic).value);
 
     for (const c of value) {
       if (c === this._receiveSeparator) {
@@ -476,4 +480,9 @@ export default class BluetoothTerminal {
 
     return matches;
   }
+}
+
+// Conditionally export class as CommonJS module for browser compatibility.
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = BluetoothTerminal;
 }

@@ -2,19 +2,19 @@
   "name": "bluetooth-terminal",
   "version": "1.5.0",
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
-  "main": "src/BluetoothTerminal.js",
+  "main": "dist/BluetoothTerminal.js",
   "engines": {
     "node": "22",
     "npm": "10"
   },
   "scripts": {
-    "build": "npm run clean:build && babel src/BluetoothTerminal.ts --extensions .ts --out-dir lib",
+    "build": "npm run clean:build && npm run build:code && npm run build:types",
+    "build:code": "babel src/BluetoothTerminal.ts --extensions .ts --out-dir dist",
     "build:types": "tsc --emitDeclarationOnly",
-    "ci": "npm run lint && npm run tsc && npm run test:coverage && npm run build",
-    "clean:build": "rm -rf lib",
+    "clean:build": "rm -rf dist",
     "clean:coverage": "rm -rf coverage",
     "coveralls": "npm run test:coverage -- --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && npm run clean:coverage",
-    "lint": "eslint",
+    "lint": "eslint src",
     "test": "mocha",
     "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "typecheck": "tsc --noEmit"
