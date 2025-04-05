@@ -64,7 +64,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set number or string representing service UUID used.
+   * Set integer or string representing service UUID used.
    * @param uuid Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
    * @see https://developer.mozilla.org/en-US/docs/Web/API/BluetoothUUID
    */
@@ -85,7 +85,7 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set number or string representing characteristic UUID used.
+   * Set integer or string representing characteristic UUID used.
    * @param uuid Characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
    * @see https://developer.mozilla.org/en-US/docs/Web/API/BluetoothUUID
    */
@@ -177,7 +177,7 @@ class BluetoothTerminal {
    */
   public disconnect(): void {
     if (!this._device) {
-      throw new Error('No connected device');
+      return;
     }
 
     this._disconnectFromDevice(this._device);
