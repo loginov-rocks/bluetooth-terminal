@@ -88,7 +88,7 @@ Create preconfigured Bluetooth Terminal instance.
 
 #### `setServiceUuid(uuid)`
 
-Set number or string representing service UUID used.
+Set integer or string representing service UUID used.
 
 | Parameter | Type                     | Description                                                              |
 | --------- | ------------------------ | ------------------------------------------------------------------------ |
@@ -98,7 +98,7 @@ Set number or string representing service UUID used.
 
 #### `setCharacteristicUuid(uuid)`
 
-Set number or string representing characteristic UUID used.
+Set integer or string representing characteristic UUID used.
 
 | Parameter | Type                     | Description                                                                     |
 | --------- | ------------------------ | ------------------------------------------------------------------------------- |
@@ -203,6 +203,7 @@ Uses:
 - ESLint for linting: `eslint`, `@eslint/js`, `eslint-config-google`, `typescript-eslint`, `eslint-plugin-jsdoc`
 - TypeScript for type checks and building declaration: `typescript`
 - Babel for building: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`
+- Jest for testing: `jest`, `jest-environment-jsdom`, `@types/jest`, `babel-jest`, `web-bluetooth-mock`
 
 Scripts:
 
@@ -213,6 +214,7 @@ Scripts:
 - `npm run build` - build library
 - `npm run clean:build` - clean output directory
 - `npm run clean:coverage` - clean coverage directory
+- `npm test` - run tests
 
 ### TODO
 
