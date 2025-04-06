@@ -3,6 +3,9 @@
   "version": "1.5.0",
   "description": "ES6 class for serial communication with Bluetooth Low Energy (Smart) devices",
   "main": "dist/BluetoothTerminal.js",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": "22",
     "npm": "10"
