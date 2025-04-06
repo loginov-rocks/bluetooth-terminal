@@ -13,10 +13,10 @@
     "build:types": "tsc --emitDeclarationOnly",
     "clean:build": "rm -rf dist",
     "clean:coverage": "rm -rf coverage",
-    "coveralls": "npm run test:coverage -- --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && npm run clean:coverage",
+    "coverage": "npm run clean:coverage && npm run test:coverage",
     "lint": "eslint src eslint.config.mjs",
     "test": "jest",
-    "test:coverage": "istanbul cover ./node_modules/mocha/bin/_mocha",
+    "test:coverage": "npm test -- --coverage",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
@@ -51,7 +51,6 @@
     "eslint": "^9.23.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jsdoc": "^50.6.9",
-    "istanbul": "^0.4.5",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "typescript": "^5.8.2",
