@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "outDir": "dist",
+    "noEmit": true,
     "strict": true
-  }
+  },
+  "include": [
+    "src/*.ts"
+  ]
 }

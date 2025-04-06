@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/BluetoothTerminal.ts"
+  ]
+}

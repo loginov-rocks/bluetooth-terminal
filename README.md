@@ -212,13 +212,13 @@ TypeScript checking uses TypeScript: `typescript`.
 Testing uses Jest and Web Bluetooth Mock: `@types/jest`, `babel-jest`, `jest`, `jest-environment-jsdom`,  `web-bluetooth-mock`.
 
 - `npm test` - run tests,
-- `npm run clean:coverage` - clean coverage directory,
 - `npm run test:coverage` - run tests with coverage,
+- `npm run coverage:clean` - clean coverage directory,
 - `npm run coverage` - clean coverage directory and run tests with coverage.
 
 Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`.
 
-- `npm run clean:build` - clean dist directory,
+- `npm run build:clean` - clean dist directory,
 - `npm run build:code` - build code,
 - `npm run build:types` - build TypeScript declaration,
 - `npm run build` - clean dist directory, build code and TypeScript declaration.
@@ -226,5 +226,4 @@ Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/p
 ### TODO
 
 1. Complete refactoring to async/await.
-2. Remove `BluetoothTerminal.test.d.ts` after building TypeScript declaration.
-3. Revisit README, code comments (check private methods), tests.
+2. Revisit README, code comments (check private methods), tests.
