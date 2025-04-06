@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 // This test file uses require() style imports because the BluetoothTerminal module is exported only as a CommonJS
 // module.
 /* eslint-disable @typescript-eslint/no-require-imports */

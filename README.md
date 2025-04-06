@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/bluetooth-terminal)](https://www.npmjs.com/package/bluetooth-terminal)
 [![CI](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/ci.yml)
 [![CD](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml)
-[![Coverage Status](https://coveralls.io/repos/github/loginov-rocks/bluetooth-terminal/badge.svg?branch=main)](https://coveralls.io/github/loginov-rocks/bluetooth-terminal?branch=main)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=loginov-rocks_bluetooth-terminal&metric=coverage)](https://sonarcloud.io/summary/new_code?id=loginov-rocks_bluetooth-terminal)
 
 **BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
 the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
@@ -197,26 +197,35 @@ Get the name of the currently connected device.
 
 ## Development
 
-Uses:
+Requires Node.js v22.
 
-- Node.js v22
-- ESLint for linting: `eslint`, `@eslint/js`, `eslint-config-google`, `typescript-eslint`, `eslint-plugin-jsdoc`
-- TypeScript for type checks and building declaration: `typescript`
-- Babel for building: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`
-- Jest for testing: `jest`, `jest-environment-jsdom`, `@types/jest`, `babel-jest`, `web-bluetooth-mock`
+### Scripts and Dependencies
 
-Scripts:
+Linting uses ESLint: `@eslint/js`, `eslint`, `eslint-config-google`, `eslint-plugin-jsdoc`, `typescript-eslint`.
 
-- `npm run lint` - linting
-- `npm run typecheck` - run TypeScript type checks
-- `npm run build:types` - build TypeScript declaration
-- `npm run build:code` - build code
-- `npm run build` - build library
-- `npm run clean:build` - clean output directory
-- `npm run clean:coverage` - clean coverage directory
-- `npm test` - run tests
+- `npm run lint`
+
+TypeScript checking uses TypeScript: `typescript`.
+
+- `npm run typecheck`
+
+Testing uses Jest and Web Bluetooth Mock: `@types/jest`, `babel-jest`, `jest`, `jest-environment-jsdom`,  `web-bluetooth-mock`.
+
+- `npm test` - run tests,
+- `npm run clean:coverage` - clean coverage directory,
+- `npm run test:coverage` - run tests with coverage,
+- `npm run coverage` - clean coverage directory and run tests with coverage.
+
+Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`.
+
+- `npm run clean:build` - clean dist directory,
+- `npm run build:code` - build code,
+- `npm run build:types` - build TypeScript declaration,
+- `npm run build` - clean dist directory, build code and TypeScript declaration.
 
 ### TODO
 
-1. Complete refactoring to async/await
-2. Remove `lib/BluetoothTerminal.test.d.ts` after building TypeScript declarations
+1. Fix TypeScript checking for tests.
+2. Complete refactoring to async/await.
+3. Remove `BluetoothTerminal.test.d.ts` after building TypeScript declaration.
+4. Revisit README, code comments (check private methods), tests.
