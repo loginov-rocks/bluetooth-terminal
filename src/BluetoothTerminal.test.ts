@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
 // This test file uses require() style imports because the BluetoothTerminal module is exported only as a CommonJS
 // module.
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -17,7 +14,10 @@ global.TextDecoder = util.TextDecoder;
 global.TextEncoder = util.TextEncoder;
 
 describe('BluetoothTerminal', () => {
-  let bt: BluetoothTerminal;
+  // Using `any` type to access private members for testing purposes. This allows for thorough testing of the internal
+  // state and behavior while maintaining strong encapsulation in the production code.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let bt: any;
 
   beforeEach(() => {
     bt = new BT();
@@ -91,7 +91,7 @@ describe('BluetoothTerminal', () => {
 
     it('should throw an error when provided a non-string value', () => {
       expect(() => {
-        bt.setReceiveSeparator(42);
+        bt.setReceiveSeparator(42 as unknown);
       }).toThrow('Receive separator must be a string');
     });
 
@@ -110,7 +110,7 @@ describe('BluetoothTerminal', () => {
 
     it('should throw an error when provided a non-string value', () => {
       expect(() => {
-        bt.setSendSeparator(42);
+        bt.setSendSeparator(42 as unknown);
       }).toThrow('Send separator must be a string');
     });
 

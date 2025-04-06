@@ -225,7 +225,6 @@ Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/p
 
 ### TODO
 
-1. Fix TypeScript checking for tests.
-2. Complete refactoring to async/await.
-3. Remove `BluetoothTerminal.test.d.ts` after building TypeScript declaration.
-4. Revisit README, code comments (check private methods), tests.
+1. Complete refactoring to async/await.
+2. Remove `BluetoothTerminal.test.d.ts` after building TypeScript declaration.
+3. Revisit README, code comments (check private methods), tests.
