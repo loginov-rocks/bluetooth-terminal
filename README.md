@@ -225,5 +225,4 @@ Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/p
 
 ### TODO
 
-1. Complete refactoring to async/await.
-2. Revisit README, code comments (check private methods), tests.
+1. Revisit README, code comments (check private methods), tests.
