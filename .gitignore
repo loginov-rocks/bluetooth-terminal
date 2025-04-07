@@ -57,10 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
-# IntelliJ IDEA
-.idea/dictionaries/
-.idea/tasks.xml
-.idea/workspace.xml
+# Output
+dist/
 
 # macOS
 .DS_Store

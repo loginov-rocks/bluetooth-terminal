@@ -1,0 +1,20 @@
+{
+  "assumptions": {
+    "setPublicClassFields": true
+  },
+  "presets": [
+    "@babel/preset-typescript",
+    [
+      "@babel/preset-env",
+      {
+        // Skip module transformation; export handled manually in code for browser and CommonJS compatibility.
+        "modules": false,
+        "targets": {
+          "chrome": "56",
+          "edge": "79",
+          "opera": "43"
+        }
+      }
+    ]
+  ]
+}
