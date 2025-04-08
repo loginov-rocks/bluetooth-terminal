@@ -83,6 +83,31 @@ describe('BluetoothTerminal', () => {
     });
   });
 
+  describe('setCharacteristicValueSize', () => {
+    it('should accept and store a valid integer', () => {
+      bt.setCharacteristicValueSize(40);
+      expect(bt._characteristicValueSize).toBe(40);
+    });
+
+    it('should throw an error when provided a non-integer value', () => {
+      expect(() => {
+        bt.setCharacteristicValueSize(NaN);
+      }).toThrow('Characteristic value size must be a positive integer');
+    });
+
+    it('should throw an error when provided zero as size', () => {
+      expect(() => {
+        bt.setCharacteristicValueSize(0);
+      }).toThrow('Characteristic value size must be a positive integer');
+    });
+
+    it('should throw an error when provided a negative integer as size', () => {
+      expect(() => {
+        bt.setCharacteristicValueSize(-1);
+      }).toThrow('Characteristic value size must be a positive integer');
+    });
+  });
+
   describe('setReceiveSeparator', () => {
     it('should accept and store a single-character string separator', () => {
       bt.setReceiveSeparator('\n');
@@ -121,73 +146,242 @@ describe('BluetoothTerminal', () => {
     });
   });
 
+  // @deprecated
   describe('setOnConnected', () => {
     it('should store the provided callback function', () => {
-      const listener = () => undefined;
+      const callback = () => undefined;
 
-      bt.setOnConnected(listener);
-      expect(bt._onConnected).toBe(listener);
+      bt.setOnConnected(callback);
+      expect(bt._onConnectCallback).toBe(callback);
     });
 
     it('should set null when no callback is provided', () => {
       bt.setOnConnected();
-      expect(bt._onConnected).toBeNull();
+      expect(bt._onConnectCallback).toBeNull();
     });
 
     it('should set null when null is explicitly provided', () => {
       bt.setOnConnected(null);
-      expect(bt._onConnected).toBeNull();
+      expect(bt._onConnectCallback).toBeNull();
     });
 
     it('should set null when undefined is explicitly provided', () => {
       bt.setOnConnected(undefined);
-      expect(bt._onConnected).toBeNull();
+      expect(bt._onConnectCallback).toBeNull();
     });
 
     it('should replace a previously set callback', () => {
-      const firstListener = () => undefined;
-      const secondListener = () => undefined;
+      const firstCallback = () => undefined;
+      const secondCallback = () => undefined;
 
-      bt.setOnConnected(firstListener);
-      expect(bt._onConnected).toBe(firstListener);
+      bt.setOnConnected(firstCallback);
+      expect(bt._onConnectCallback).toBe(firstCallback);
 
-      bt.setOnConnected(secondListener);
-      expect(bt._onConnected).toBe(secondListener);
+      bt.setOnConnected(secondCallback);
+      expect(bt._onConnectCallback).toBe(secondCallback);
     });
   });
 
+  describe('onConnect', () => {
+    it('should store the provided callback function', () => {
+      const callback = () => undefined;
+
+      bt.onConnect(callback);
+      expect(bt._onConnectCallback).toBe(callback);
+    });
+
+    it('should set null when no callback is provided', () => {
+      bt.onConnect();
+      expect(bt._onConnectCallback).toBeNull();
+    });
+
+    it('should set null when null is explicitly provided', () => {
+      bt.onConnect(null);
+      expect(bt._onConnectCallback).toBeNull();
+    });
+
+    it('should set null when undefined is explicitly provided', () => {
+      bt.onConnect(undefined);
+      expect(bt._onConnectCallback).toBeNull();
+    });
+
+    it('should replace a previously set callback', () => {
+      const firstCallback = () => undefined;
+      const secondCallback = () => undefined;
+
+      bt.onConnect(firstCallback);
+      expect(bt._onConnectCallback).toBe(firstCallback);
+
+      bt.onConnect(secondCallback);
+      expect(bt._onConnectCallback).toBe(secondCallback);
+    });
+  });
+
+  // @deprecated
   describe('setOnDisconnected', () => {
     it('should store the provided callback function', () => {
-      const listener = () => undefined;
+      const callback = () => undefined;
 
-      bt.setOnDisconnected(listener);
-      expect(bt._onDisconnected).toBe(listener);
+      bt.setOnDisconnected(callback);
+      expect(bt._onDisconnectCallback).toBe(callback);
     });
 
     it('should set null when no callback is provided', () => {
       bt.setOnDisconnected();
-      expect(bt._onDisconnected).toBeNull();
+      expect(bt._onDisconnectCallback).toBeNull();
     });
 
     it('should set null when null is explicitly provided', () => {
       bt.setOnDisconnected(null);
-      expect(bt._onDisconnected).toBeNull();
+      expect(bt._onDisconnectCallback).toBeNull();
     });
 
     it('should set null when undefined is explicitly provided', () => {
       bt.setOnDisconnected(undefined);
-      expect(bt._onDisconnected).toBeNull();
+      expect(bt._onDisconnectCallback).toBeNull();
     });
 
     it('should replace a previously set callback', () => {
-      const firstListener = () => undefined;
-      const secondListener = () => undefined;
+      const firstCallback = () => undefined;
+      const secondCallback = () => undefined;
 
-      bt.setOnDisconnected(firstListener);
-      expect(bt._onDisconnected).toBe(firstListener);
+      bt.setOnDisconnected(firstCallback);
+      expect(bt._onDisconnectCallback).toBe(firstCallback);
 
-      bt.setOnDisconnected(secondListener);
-      expect(bt._onDisconnected).toBe(secondListener);
+      bt.setOnDisconnected(secondCallback);
+      expect(bt._onDisconnectCallback).toBe(secondCallback);
+    });
+  });
+
+  describe('onDisconnect', () => {
+    it('should store the provided callback function', () => {
+      const callback = () => undefined;
+
+      bt.onDisconnect(callback);
+      expect(bt._onDisconnectCallback).toBe(callback);
+    });
+
+    it('should set null when no callback is provided', () => {
+      bt.onDisconnect();
+      expect(bt._onDisconnectCallback).toBeNull();
+    });
+
+    it('should set null when null is explicitly provided', () => {
+      bt.onDisconnect(null);
+      expect(bt._onDisconnectCallback).toBeNull();
+    });
+
+    it('should set null when undefined is explicitly provided', () => {
+      bt.onDisconnect(undefined);
+      expect(bt._onDisconnectCallback).toBeNull();
+    });
+
+    it('should replace a previously set callback', () => {
+      const firstCallback = () => undefined;
+      const secondCallback = () => undefined;
+
+      bt.onDisconnect(firstCallback);
+      expect(bt._onDisconnectCallback).toBe(firstCallback);
+
+      bt.onDisconnect(secondCallback);
+      expect(bt._onDisconnectCallback).toBe(secondCallback);
+    });
+  });
+
+  describe('onReceive', () => {
+    it('should store the provided callback function', () => {
+      const callback = () => undefined;
+
+      bt.onReceive(callback);
+      expect(bt._onReceiveCallback).toBe(callback);
+    });
+
+    it('should set null when no callback is provided', () => {
+      bt.onReceive();
+      expect(bt._onReceiveCallback).toBeNull();
+    });
+
+    it('should set null when null is explicitly provided', () => {
+      bt.onReceive(null);
+      expect(bt._onReceiveCallback).toBeNull();
+    });
+
+    it('should set null when undefined is explicitly provided', () => {
+      bt.onReceive(undefined);
+      expect(bt._onReceiveCallback).toBeNull();
+    });
+
+    it('should replace a previously set callback', () => {
+      const firstCallback = () => undefined;
+      const secondCallback = () => undefined;
+
+      bt.onReceive(firstCallback);
+      expect(bt._onReceiveCallback).toBe(firstCallback);
+
+      bt.onReceive(secondCallback);
+      expect(bt._onReceiveCallback).toBe(secondCallback);
+    });
+
+    describe('callback', () => {
+      let onReceiveCallback: jest.Func;
+
+      beforeEach(() => {
+        const device = new DeviceMock('Simon', [0xFFE0]);
+        navigator.bluetooth = new WebBluetoothMock([device]);
+
+        onReceiveCallback = jest.fn();
+        bt.onReceive(onReceiveCallback);
+
+        return bt.connect();
+      });
+
+      it('should not process data until a separator character is received', () => {
+        // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
+        // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
+        // would behave when receiving data from a device.
+        const characteristic = bt._characteristic;
+        characteristic.value = new TextEncoder().encode('Hello, world!');
+        characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+
+        expect(onReceiveCallback).not.toHaveBeenCalled();
+      });
+
+      it('should process data once when a single separator character is received', () => {
+        // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
+        // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
+        // would behave when receiving data from a device.
+        const characteristic = bt._characteristic;
+        characteristic.value = new TextEncoder().encode('Hello, world!\n');
+        characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+
+        expect(onReceiveCallback).toHaveBeenCalledTimes(1);
+        expect(onReceiveCallback).toHaveBeenCalledWith('Hello, world!');
+      });
+
+      it('should process multiple data chunks when multiple separators are received', () => {
+        // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
+        // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
+        // would behave when receiving data from a device.
+        const characteristic = bt._characteristic;
+        characteristic.value = new TextEncoder().encode('Hello, world!\nCiao, mondo!\n');
+        characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+
+        expect(onReceiveCallback).toHaveBeenCalledTimes(2);
+        expect(onReceiveCallback).toHaveBeenNthCalledWith(1, 'Hello, world!');
+        expect(onReceiveCallback).toHaveBeenNthCalledWith(2, 'Ciao, mondo!');
+      });
+
+      it('should process only complete data chunks when the ending separator is missing', () => {
+        // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
+        // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
+        // would behave when receiving data from a device.
+        const characteristic = bt._characteristic;
+        characteristic.value = new TextEncoder().encode('Hello, world!\nCiao, mondo!');
+        characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+
+        expect(onReceiveCallback).toHaveBeenCalledTimes(1);
+        expect(onReceiveCallback).toHaveBeenCalledWith('Hello, world!');
+      });
     });
   });
 
@@ -222,14 +416,14 @@ describe('BluetoothTerminal', () => {
       return expect(bt.connect()).rejects.toThrow();
     });
 
-    it('should invoke the onConnected callback exactly once after successfully establishing the connection',
+    it('should invoke the onConnect callback exactly once after successfully establishing the connection',
         async () => {
-          const onConnectedListener = jest.fn();
-          bt.setOnConnected(onConnectedListener);
+          const onConnectCallback = jest.fn();
+          bt.onConnect(onConnectCallback);
 
           await bt.connect();
 
-          expect(onConnectedListener).toHaveBeenCalledTimes(1);
+          expect(onConnectCallback).toHaveBeenCalledTimes(1);
         });
   });
 
@@ -259,16 +453,17 @@ describe('BluetoothTerminal', () => {
       expect(device.gatt.disconnect).not.toHaveBeenCalled();
     });
 
-    it('should invoke the onDisconnected callback exactly once after successfully disconnecting the device', () => {
-      const onDisconnectedListener = jest.fn();
-      bt.setOnDisconnected(onDisconnectedListener);
+    it('should invoke the onDisconnect callback exactly once after successfully disconnecting the device', () => {
+      const onDisconnectCallback = jest.fn();
+      bt.onDisconnect(onDisconnectCallback);
 
       bt.disconnect();
 
-      expect(onDisconnectedListener).toHaveBeenCalledTimes(1);
+      expect(onDisconnectCallback).toHaveBeenCalledTimes(1);
     });
   });
 
+  // @deprecated
   describe('receive', () => {
     beforeEach(() => {
       const device = new DeviceMock('Simon', [0xFFE0]);
@@ -361,24 +556,22 @@ describe('BluetoothTerminal', () => {
 
       jest.spyOn(bt._characteristic, 'writeValue');
 
-      await bt.send('This string is longer than the default max characteristic value length of 20 chars, so it will ' +
-        'trigger write value 7 times!');
+      await bt.send('This string is longer than the default characteristic value size of 20 chars, so it will ' +
+        'trigger write value 6 times!');
 
-      expect(bt._characteristic.writeValue).toHaveBeenCalledTimes(7);
+      expect(bt._characteristic.writeValue).toHaveBeenCalledTimes(6);
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(1,
           new TextEncoder().encode('This string is longe'));
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(2,
-          new TextEncoder().encode('r than the default m'));
+          new TextEncoder().encode('r than the default c'));
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(3,
-          new TextEncoder().encode('ax characteristic va'));
+          new TextEncoder().encode('haracteristic value '));
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(4,
-          new TextEncoder().encode('lue length of 20 cha'));
+          new TextEncoder().encode('size of 20 chars, so'));
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(5,
-          new TextEncoder().encode('rs, so it will trigg'));
+          new TextEncoder().encode(' it will trigger wri'));
       expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(6,
-          new TextEncoder().encode('er write value 7 tim'));
-      expect(bt._characteristic.writeValue).toHaveBeenNthCalledWith(7,
-          new TextEncoder().encode('es!\n'));
+          new TextEncoder().encode('te value 6 times!\n'));
     });
 
     it('should handle mid-transmission disconnection by rejecting the send promise', async () => {
@@ -386,7 +579,7 @@ describe('BluetoothTerminal', () => {
 
       jest.spyOn(bt._characteristic, 'writeValue');
 
-      const promise = bt.send('This string is longer than the default max characteristic value length of 20 chars!');
+      const promise = bt.send('This string is longer than the default characteristic value size of 20 chars!');
 
       expect(bt._characteristic.writeValue).toHaveBeenCalledTimes(1);
       expect(bt._characteristic.writeValue).toHaveBeenCalledWith(new TextEncoder().encode('This string is longe'));
@@ -441,7 +634,7 @@ describe('BluetoothTerminal', () => {
     });
   });
 
-  describe('_handleDisconnection', () => {
+  describe('_gattServerDisconnectedListener', () => {
     let device: typeof DeviceMock;
 
     beforeEach(() => {
@@ -488,26 +681,26 @@ describe('BluetoothTerminal', () => {
       }, 0);
     });
 
-    it('should invoke the onDisconnected callback when device disconnection occurs', () => {
-      const onDisconnectedListener = jest.fn();
-      bt.setOnDisconnected(onDisconnectedListener);
+    it('should invoke the onDisconnect callback when device disconnection occurs', () => {
+      const onDisconnectCallback = jest.fn();
+      bt.onDisconnect(onDisconnectCallback);
 
       device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
 
-      expect(onDisconnectedListener).toHaveBeenCalledTimes(1);
+      expect(onDisconnectCallback).toHaveBeenCalledTimes(1);
     });
 
-    it('should invoke the onConnected callback after successful automatic reconnection', (done) => {
-      const onConnectedListener = jest.fn();
-      bt.setOnConnected(onConnectedListener);
+    it('should invoke the onConnect callback after successful automatic reconnection', (done) => {
+      const onConnectCallback = jest.fn();
+      bt.onConnect(onConnectCallback);
 
       device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
 
       // Use setTimeout to defer verification until after the current call stack has completed. This allows the
-      // reconnection Promise chain to resolve before we check if the onConnected callback was triggered. Without this,
+      // reconnection Promise chain to resolve before we check if the onConnect callback was triggered. Without this,
       // we might check before the async reconnection process finishes.
       setTimeout(() => {
-        expect(onConnectedListener).toHaveBeenCalledTimes(1);
+        expect(onConnectCallback).toHaveBeenCalledTimes(1);
         // Signal Jest that the asynchronous test is complete.
         done();
       }, 0);

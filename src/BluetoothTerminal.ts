@@ -6,18 +6,19 @@ class BluetoothTerminal {
   private _characteristicUuid: number | string = 0xFFE1;
   private _receiveSeparator: string = '\n';
   private _sendSeparator: string = '\n';
-  private _onConnected: (() => void) | null = null;
-  private _onDisconnected: (() => void) | null = null;
+  private _onConnectCallback: (() => void) | null = null;
+  private _onDisconnectCallback: (() => void) | null = null;
+  private _onReceiveCallback: ((data: string) => void) | null = null;
 
   /**
-   * Buffer containing not separated data.
+   * Characteristic object cache.
    */
-  private _receiveBuffer: string = '';
+  private _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
 
   /**
-   * Max characteristic value length.
+   * Characteristic value size.
    */
-  private _maxCharacteristicValueLength: number = 20;
+  private _characteristicValueSize: number = 20;
 
   /**
    * Device object cache.
@@ -25,42 +26,42 @@ class BluetoothTerminal {
   private _device: BluetoothDevice | null = null;
 
   /**
-   * Characteristic object cache.
+   * Buffer containing not separated data.
    */
-  private _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+  private _receiveBuffer: string = '';
 
-  private _boundHandleDisconnection: EventListenerOrEventListenerObject;
-  private _boundHandleCharacteristicValueChanged: EventListenerOrEventListenerObject;
+  private _boundCharacteristicValueChangedListener: EventListenerOrEventListenerObject;
+  private _boundGattServerDisconnectedListener: EventListenerOrEventListenerObject;
 
   /**
    * Create preconfigured Bluetooth Terminal instance.
-   * @param [serviceUuid]         Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
-   * @param [characteristicUuid]  Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit
-   *                                UUID)
-   * @param [receiveSeparator]    Optional receive separator with length equal to one character
-   * @param [sendSeparator]       Optional send separator with length equal to one character
-   * @param [onConnected]         Optional callback for connection completion
-   * @param [onDisconnected]      Optional callback for disconnection
+   * @param [serviceUuid]           Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
+   * @param [characteristicUuid]    Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit
+   *                                  UUID)
+   * @param [receiveSeparator]      Optional receive separator with length equal to one character
+   * @param [sendSeparator]         Optional send separator with length equal to one character
+   * @param [onConnectCallback]     Optional callback for connection completion
+   * @param [onDisconnectCallback]  Optional callback for disconnection
    */
   public constructor(
       serviceUuid: number | string = 0xFFE0,
       characteristicUuid: number | string = 0xFFE1,
       receiveSeparator: string = '\n',
       sendSeparator: string = '\n',
-      onConnected?: () => void,
-      onDisconnected?: () => void,
+      onConnectCallback?: () => void,
+      onDisconnectCallback?: () => void,
   ) {
-    // Bound functions used to add and remove appropriate event handlers.
-    this._boundHandleDisconnection = this._handleDisconnection.bind(this);
-    this._boundHandleCharacteristicValueChanged = this._handleCharacteristicValueChanged.bind(this);
+    // Bind listeners to this instance.
+    this._boundCharacteristicValueChangedListener = this._characteristicValueChangedListener.bind(this);
+    this._boundGattServerDisconnectedListener = this._gattServerDisconnectedListener.bind(this);
 
     // Configure with specified parameters.
     this.setServiceUuid(serviceUuid);
     this.setCharacteristicUuid(characteristicUuid);
     this.setReceiveSeparator(receiveSeparator);
     this.setSendSeparator(sendSeparator);
-    this.setOnConnected(onConnected);
-    this.setOnDisconnected(onDisconnected);
+    this.onConnect(onConnectCallback);
+    this.onDisconnect(onDisconnectCallback);
   }
 
   /**
@@ -106,6 +107,18 @@ class BluetoothTerminal {
   }
 
   /**
+   * Set characteristic value size.
+   * @param size Characteristic value size as a positive integer
+   */
+  public setCharacteristicValueSize(size: number): void {
+    if (!Number.isInteger(size) || size <= 0) {
+      throw new Error('Characteristic value size must be a positive integer');
+    }
+
+    this._characteristicValueSize = size;
+  }
+
+  /**
    * Set character representing separator for data coming from the connected device, end of line for example.
    * @param separator Receive separator with length equal to one character
    */
@@ -138,19 +151,45 @@ class BluetoothTerminal {
   }
 
   /**
-   * Set a listener that will be called after the device is fully connected and communication has started.
-   * @param [listener] Callback for successful connection; omit or pass null/undefined to remove
+   * Set a callback that will be called after the device is fully connected and communication has started.
+   * @deprecated
+   * @param [callback] Callback for successful connection; omit or pass null/undefined to remove
    */
-  public setOnConnected(listener?: (() => void) | null): void {
-    this._onConnected = listener || null;
+  public setOnConnected(callback?: (() => void) | null): void {
+    this.onConnect(callback);
   }
 
   /**
-   * Set a listener that will be called after the device is disconnected.
-   * @param [listener] Callback for disconnection; omit or pass null/undefined to remove
+   * Set a callback that will be called after the device is fully connected and communication has started.
+   * @param [callback] Callback for successful connection; omit or pass null/undefined to remove
    */
-  public setOnDisconnected(listener?: (() => void) | null): void {
-    this._onDisconnected = listener || null;
+  public onConnect(callback?: (() => void) | null): void {
+    this._onConnectCallback = callback || null;
+  }
+
+  /**
+   * Set a callback that will be called after the device is disconnected.
+   * @deprecated
+   * @param [callback] Callback for disconnection; omit or pass null/undefined to remove
+   */
+  public setOnDisconnected(callback?: (() => void) | null): void {
+    this.onDisconnect(callback);
+  }
+
+  /**
+   * Set a callback that will be called after the device is disconnected.
+   * @param [callback] Callback for disconnection; omit or pass null/undefined to remove
+   */
+  public onDisconnect(callback?: (() => void) | null): void {
+    this._onDisconnectCallback = callback || null;
+  }
+
+  /**
+   * Set a callback that will be called when incoming data from the connected device received.
+   * @param [callback] Callback for incoming data; omit or pass null/undefined to remove
+   */
+  public onReceive(callback?: ((data: string) => void) | null): void {
+    this._onReceiveCallback = callback || null;
   }
 
   /**
@@ -164,12 +203,12 @@ class BluetoothTerminal {
       this._device = await this._requestBluetoothDevice();
     }
 
-    this._device.addEventListener('gattserverdisconnected', this._boundHandleDisconnection);
+    this._device.addEventListener('gattserverdisconnected', this._boundGattServerDisconnectedListener);
 
     await this._connectToDevice(this._device);
 
-    if (this._onConnected) {
-      this._onConnected();
+    if (this._onConnectCallback) {
+      this._onConnectCallback();
     }
   }
 
@@ -186,20 +225,21 @@ class BluetoothTerminal {
 
     if (this._characteristic) {
       this._characteristic.removeEventListener('characteristicvaluechanged',
-          this._boundHandleCharacteristicValueChanged);
+          this._boundCharacteristicValueChangedListener);
       this._characteristic = null;
     }
 
     this._device = null;
 
-    if (this._onDisconnected) {
-      this._onDisconnected();
+    if (this._onDisconnectCallback) {
+      this._onDisconnectCallback();
     }
   }
 
   /**
    * Handler for incoming data from the connected device. Override this method to process data received from the
    * connected device.
+   * @deprecated
    * @param data String data received from the connected device
    */
   public receive(data: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -207,8 +247,8 @@ class BluetoothTerminal {
   }
 
   /**
-   * Send data to the connected device. The data is automatically split into chunks if it exceeds the maximum
-   * characteristic value length.
+   * Send data to the connected device. The data is automatically split into chunks if it exceeds the characteristic
+   * value size.
    * @param data String data to be sent to the connected device
    * @returns Promise that resolves when all data has been sent, or rejects if an error occurs
    */
@@ -223,8 +263,8 @@ class BluetoothTerminal {
 
     data += this._sendSeparator;
 
-    // Split data to chunks by max characteristic value length.
-    const chunks = BluetoothTerminal._splitByLength(data, this._maxCharacteristicValueLength);
+    // Split data to chunks by characteristic value size.
+    const chunks = BluetoothTerminal._splitByLength(data, this._characteristicValueSize);
 
     // Return rejected promise immediately if there is no connected device.
     if (!this._characteristic) {
@@ -286,7 +326,7 @@ class BluetoothTerminal {
 
     this._log('Disconnecting from "' + device.name + '" bluetooth device...');
 
-    device.removeEventListener('gattserverdisconnected', this._boundHandleDisconnection);
+    device.removeEventListener('gattserverdisconnected', this._boundGattServerDisconnectedListener);
 
     if (!device.gatt.connected) {
       this._log('"' + device.name + '" bluetooth device is already disconnected');
@@ -365,7 +405,7 @@ class BluetoothTerminal {
 
     this._log('Notifications started');
 
-    characteristic.addEventListener('characteristicvaluechanged', this._boundHandleCharacteristicValueChanged);
+    characteristic.addEventListener('characteristicvaluechanged', this._boundCharacteristicValueChangedListener);
   }
 
   /**
@@ -380,21 +420,21 @@ class BluetoothTerminal {
 
     this._log('Notifications stopped');
 
-    characteristic.removeEventListener('characteristicvaluechanged', this._boundHandleCharacteristicValueChanged);
+    characteristic.removeEventListener('characteristicvaluechanged', this._boundCharacteristicValueChangedListener);
   }
 
   /**
    * Handle disconnection.
    * @param event Event
    */
-  private _handleDisconnection(event: Event): void {
+  private _gattServerDisconnectedListener(event: Event): void {
     // `event.target` will be `BluetoothDevice` when event triggered with this listener.
     const device = event.target as BluetoothDevice;
 
     this._log('"' + device.name + '" bluetooth device disconnected, trying to reconnect...');
 
-    if (this._onDisconnected) {
-      this._onDisconnected();
+    if (this._onDisconnectCallback) {
+      this._onDisconnectCallback();
     }
 
     // Using IIFE to leverage async/await while maintaining the void return type required by the event handler
@@ -409,8 +449,8 @@ class BluetoothTerminal {
         return;
       }
 
-      if (this._onConnected) {
-        this._onConnected();
+      if (this._onConnectCallback) {
+        this._onConnectCallback();
       }
     })();
   }
@@ -419,7 +459,7 @@ class BluetoothTerminal {
    * Handle characteristic value changed.
    * @param event Event
    */
-  private _handleCharacteristicValueChanged(event: Event): void {
+  private _characteristicValueChangedListener(event: Event): void {
     // `event.target` will be `BluetoothRemoteGATTCharacteristic` when event triggered with this listener.
     const value = new TextDecoder().decode((event.target as BluetoothRemoteGATTCharacteristic).value);
 
@@ -430,6 +470,10 @@ class BluetoothTerminal {
 
         if (data) {
           this.receive(data);
+
+          if (this._onReceiveCallback) {
+            this._onReceiveCallback(data);
+          }
         }
       } else {
         this._receiveBuffer += c;
