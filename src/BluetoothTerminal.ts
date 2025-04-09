@@ -1,41 +1,45 @@
+interface BluetoothTerminalOptions {
+  serviceUuid?: number | string;
+  characteristicUuid?: number | string;
+  characteristicValueSize?: number;
+  receiveSeparator?: string;
+  sendSeparator?: string;
+  onConnectCallback?: () => void;
+  onDisconnectCallback?: () => void;
+  onReceiveCallback?: (data: string) => void;
+}
+
 /**
  * Bluetooth Terminal class.
  */
 class BluetoothTerminal {
   private _serviceUuid: number | string = 0xFFE0;
   private _characteristicUuid: number | string = 0xFFE1;
+  private _characteristicValueSize: number = 20;
   private _receiveSeparator: string = '\n';
   private _sendSeparator: string = '\n';
   private _onConnectCallback: (() => void) | null = null;
   private _onDisconnectCallback: (() => void) | null = null;
   private _onReceiveCallback: ((data: string) => void) | null = null;
 
-  /**
-   * Characteristic object cache.
-   */
+  // Characteristic object cache.
   private _characteristic: BluetoothRemoteGATTCharacteristic | null = null;
 
-  /**
-   * Characteristic value size.
-   */
-  private _characteristicValueSize: number = 20;
-
-  /**
-   * Device object cache.
-   */
+  // Device object cache.
   private _device: BluetoothDevice | null = null;
 
-  /**
-   * Buffer containing not separated data.
-   */
+  // Buffer containing not separated data.
   private _receiveBuffer: string = '';
 
+  // Bound listeners.
   private _boundCharacteristicValueChangedListener: EventListenerOrEventListenerObject;
   private _boundGattServerDisconnectedListener: EventListenerOrEventListenerObject;
 
   /**
-   * Create preconfigured Bluetooth Terminal instance.
-   * @param [serviceUuid]           Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)
+   * Create preconfigured Bluetooth Terminal instance. Options object usage is preferred, the rest of the parameters
+   * will be deprecated. When options object used, the rest of the parameters are ignored.
+   * @param [optionsOrServiceUuid]  Optional options object or service UUID as an integer (16-bit or 32-bit) or a
+   *                                  string (128-bit UUID)
    * @param [characteristicUuid]    Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit
    *                                  UUID)
    * @param [receiveSeparator]      Optional receive separator with length equal to one character
@@ -44,24 +48,65 @@ class BluetoothTerminal {
    * @param [onDisconnectCallback]  Optional callback for disconnection
    */
   public constructor(
-      serviceUuid: number | string = 0xFFE0,
-      characteristicUuid: number | string = 0xFFE1,
-      receiveSeparator: string = '\n',
-      sendSeparator: string = '\n',
-      onConnectCallback?: () => void,
-      onDisconnectCallback?: () => void,
+      optionsOrServiceUuid?: BluetoothTerminalOptions | number | string,
+      characteristicUuid?: number | string, // @deprecated
+      receiveSeparator?: string, // @deprecated
+      sendSeparator?: string, // @deprecated
+      onConnectCallback?: () => void, // @deprecated
+      onDisconnectCallback?: () => void, // @deprecated
   ) {
     // Bind listeners to this instance.
     this._boundCharacteristicValueChangedListener = this._characteristicValueChangedListener.bind(this);
     this._boundGattServerDisconnectedListener = this._gattServerDisconnectedListener.bind(this);
 
-    // Configure with specified parameters.
-    this.setServiceUuid(serviceUuid);
-    this.setCharacteristicUuid(characteristicUuid);
-    this.setReceiveSeparator(receiveSeparator);
-    this.setSendSeparator(sendSeparator);
-    this.onConnect(onConnectCallback);
-    this.onDisconnect(onDisconnectCallback);
+    if (typeof optionsOrServiceUuid === 'object') {
+      const options = optionsOrServiceUuid;
+
+      if (options.serviceUuid !== undefined) {
+        this.setServiceUuid(options.serviceUuid);
+      }
+      if (options.characteristicUuid !== undefined) {
+        this.setCharacteristicUuid(options.characteristicUuid);
+      }
+      if (options.characteristicValueSize !== undefined) {
+        this.setCharacteristicValueSize(options.characteristicValueSize);
+      }
+      if (options.receiveSeparator !== undefined) {
+        this.setReceiveSeparator(options.receiveSeparator);
+      }
+      if (options.sendSeparator !== undefined) {
+        this.setSendSeparator(options.sendSeparator);
+      }
+      if (options.onConnectCallback !== undefined) {
+        this.onConnect(options.onConnectCallback);
+      }
+      if (options.onDisconnectCallback !== undefined) {
+        this.onDisconnect(options.onDisconnectCallback);
+      }
+      if (options.onReceiveCallback !== undefined) {
+        this.onReceive(options.onReceiveCallback);
+      }
+    } else {
+      // @deprecated
+      if (optionsOrServiceUuid !== undefined) {
+        this.setServiceUuid(optionsOrServiceUuid);
+      }
+      if (characteristicUuid !== undefined) {
+        this.setCharacteristicUuid(characteristicUuid);
+      }
+      if (receiveSeparator !== undefined) {
+        this.setReceiveSeparator(receiveSeparator);
+      }
+      if (sendSeparator !== undefined) {
+        this.setSendSeparator(sendSeparator);
+      }
+      if (onConnectCallback !== undefined) {
+        this.onConnect(onConnectCallback);
+      }
+      if (onDisconnectCallback !== undefined) {
+        this.onDisconnect(onDisconnectCallback);
+      }
+    }
   }
 
   /**

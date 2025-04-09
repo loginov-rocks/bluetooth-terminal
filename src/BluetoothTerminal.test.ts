@@ -13,6 +13,356 @@ const BT = require('./BluetoothTerminal');
 global.TextDecoder = util.TextDecoder;
 global.TextEncoder = util.TextEncoder;
 
+describe('constructor', () => {
+  it('should initialize with default values when no parameters are provided', () => {
+    const bt = new BT();
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should initialize with default values when an empty options object is provided', () => {
+    const bt = new BT({});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom integer service UUID via options object', () => {
+    const bt = new BT({serviceUuid: 1234});
+
+    expect(bt._serviceUuid).toBe(1234);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom string service UUID via options object', () => {
+    const bt = new BT({serviceUuid: '1234-5678-9ABC-DEF0'});
+
+    expect(bt._serviceUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom integer characteristic UUID via options object', () => {
+    const bt = new BT({characteristicUuid: 1234});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(1234);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom string characteristic UUID via options object', () => {
+    const bt = new BT({characteristicUuid: '1234-5678-9ABC-DEF0'});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom characteristic value size via options object', () => {
+    const bt = new BT({characteristicValueSize: 40});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(40);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom receive separator via options object', () => {
+    const bt = new BT({receiveSeparator: ';'});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe(';');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom send separator via options object', () => {
+    const bt = new BT({sendSeparator: ';'});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe(';');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom onConnect callback via options object', () => {
+    const callback = () => undefined;
+    const bt = new BT({onConnectCallback: callback});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBe(callback);
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom onDisconnect callback via options object', () => {
+    const callback = () => undefined;
+    const bt = new BT({onDisconnectCallback: callback});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBe(callback);
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  it('should accept and store custom onReceive callback via options object', () => {
+    const callback = () => undefined;
+    const bt = new BT({onReceiveCallback: callback});
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBe(callback);
+  });
+
+  it('should accept and store all custom parameters provided via options object', () => {
+    const firstCallback = () => undefined;
+    const secondCallback = () => undefined;
+    const thirdCallback = () => undefined;
+    const bt = new BT({
+      serviceUuid: 1234,
+      characteristicUuid: '1234-5678-9ABC-DEF0',
+      characteristicValueSize: 40,
+      receiveSeparator: ';',
+      sendSeparator: '!',
+      onConnectCallback: firstCallback,
+      onDisconnectCallback: secondCallback,
+      onReceiveCallback: thirdCallback,
+    });
+
+    expect(bt._serviceUuid).toBe(1234);
+    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicValueSize).toBe(40);
+    expect(bt._receiveSeparator).toBe(';');
+    expect(bt._sendSeparator).toBe('!');
+    expect(bt._onConnectCallback).toBe(firstCallback);
+    expect(bt._onDisconnectCallback).toBe(secondCallback);
+    expect(bt._onReceiveCallback).toBe(thirdCallback);
+  });
+
+  // @deprecated
+  it('should prioritize options object over legacy parameters when both are provided', () => {
+    const firstCallback = () => undefined;
+    const secondCallback = () => undefined;
+    const thirdCallback = () => undefined;
+    const legacyCallback = () => undefined;
+    const bt = new BT(
+        {
+          serviceUuid: 1234,
+          characteristicUuid: '1234-5678-9ABC-DEF0',
+          characteristicValueSize: 40,
+          receiveSeparator: ';',
+          sendSeparator: '!',
+          onConnectCallback: firstCallback,
+          onDisconnectCallback: secondCallback,
+          onReceiveCallback: thirdCallback,
+        },
+        5678,
+        '@',
+        '#',
+        legacyCallback,
+        legacyCallback,
+    );
+
+    expect(bt._serviceUuid).toBe(1234);
+    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicValueSize).toBe(40);
+    expect(bt._receiveSeparator).toBe(';');
+    expect(bt._sendSeparator).toBe('!');
+    expect(bt._onConnectCallback).toBe(firstCallback);
+    expect(bt._onDisconnectCallback).toBe(secondCallback);
+    expect(bt._onReceiveCallback).toBe(thirdCallback);
+  });
+
+  // @deprecated
+  it('should accept and store custom integer service UUID', () => {
+    const bt = new BT(1234);
+
+    expect(bt._serviceUuid).toBe(1234);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom string service UUID', () => {
+    const bt = new BT('1234-5678-9ABC-DEF0');
+
+    expect(bt._serviceUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom integer characteristic UUID', () => {
+    const bt = new BT(undefined, 1234);
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(1234);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom string characteristic UUID', () => {
+    const bt = new BT(undefined, '1234-5678-9ABC-DEF0');
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom receive separator', () => {
+    const bt = new BT(undefined, undefined, ';');
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe(';');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom send separator', () => {
+    const bt = new BT(undefined, undefined, undefined, ';');
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe(';');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom onConnect callback', () => {
+    const callback = () => undefined;
+    const bt = new BT(undefined, undefined, undefined, undefined, callback);
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBe(callback);
+    expect(bt._onDisconnectCallback).toBeNull();
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store custom onDisconnect callback', () => {
+    const callback = () => undefined;
+    const bt = new BT(undefined, undefined, undefined, undefined, undefined, callback);
+
+    expect(bt._serviceUuid).toBe(0xFFE0);
+    expect(bt._characteristicUuid).toBe(0xFFE1);
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe('\n');
+    expect(bt._sendSeparator).toBe('\n');
+    expect(bt._onConnectCallback).toBeNull();
+    expect(bt._onDisconnectCallback).toBe(callback);
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+
+  // @deprecated
+  it('should accept and store all custom parameters provided', () => {
+    const firstCallback = () => undefined;
+    const secondCallback = () => undefined;
+    const bt = new BT(1234, '1234-5678-9ABC-DEF0', ';', '!', firstCallback, secondCallback);
+
+    expect(bt._serviceUuid).toBe(1234);
+    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicValueSize).toBe(20);
+    expect(bt._receiveSeparator).toBe(';');
+    expect(bt._sendSeparator).toBe('!');
+    expect(bt._onConnectCallback).toBe(firstCallback);
+    expect(bt._onDisconnectCallback).toBe(secondCallback);
+    expect(bt._onReceiveCallback).toBeNull();
+  });
+});
+
 describe('BluetoothTerminal', () => {
   // Using `any` type to access private members for testing purposes. This allows for thorough testing of the internal
   // state and behavior while maintaining strong encapsulation in the production code.
@@ -60,8 +410,8 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should accept and store a valid string UUID', () => {
-      bt.setCharacteristicUuid('1234');
-      expect(bt._characteristicUuid).toBe('1234');
+      bt.setCharacteristicUuid('1234-5678-9ABC-DEF0');
+      expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
     });
 
     it('should throw an error when provided a non-integer and non-string value', () => {
