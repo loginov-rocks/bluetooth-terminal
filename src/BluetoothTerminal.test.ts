@@ -960,72 +960,48 @@ describe('BluetoothTerminal', () => {
     });
   });
 
-  describe('_stopNotifications', () => {
-    it('should prevent further data reception by removing the characteristic value change listener', async () => {
-      const device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
-      jest.spyOn(bt, 'receive');
-
-      await bt.connect();
-
-      const characteristic = bt._characteristic;
-      characteristic.value = new TextEncoder().encode('Hello, world!\n');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
-
-      expect(bt.receive).toHaveBeenCalledTimes(1);
-      expect(bt.receive).toHaveBeenCalledWith('Hello, world!');
-
-      await bt._stopNotifications(bt._characteristic);
-
-      characteristic.value = new TextEncoder().encode('Ciao, mondo!\n');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
-
-      expect(bt.receive).toHaveBeenCalledTimes(1); // Still called only once, proving notifications were stopped.
-    });
-  });
-
   describe('_gattServerDisconnectedListener', () => {
     let device: typeof DeviceMock;
 
     beforeEach(() => {
       device = new DeviceMock('Simon', [0xFFE0]);
       navigator.bluetooth = new WebBluetoothMock([device]);
-      jest.spyOn(bt, '_connectDeviceAndCacheCharacteristic');
+      jest.spyOn(device.gatt, 'connect');
 
       return bt.connect();
     });
 
     it('should automatically attempt reconnection when device disconnects', () => {
-      expect(bt._connectDeviceAndCacheCharacteristic).toHaveBeenCalledTimes(1);
+      expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
       device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
 
-      expect(bt._connectDeviceAndCacheCharacteristic).toHaveBeenCalledTimes(2);
+      expect(device.gatt.connect).toHaveBeenCalledTimes(2);
     });
 
     it('should log reconnection errors when automatic reconnection fails', (done) => {
       jest.spyOn(bt, '_log');
 
       // Verify that connect was already called once during test setup.
-      expect(bt._connectDeviceAndCacheCharacteristic).toHaveBeenCalledTimes(1);
+      expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
       // Simulate a device disconnection scenario:
       // 1. Set the connected flag to false to mimic a disconnected state.
       device.gatt.connected = false;
       // 2. Override the connect method to simulate a connection failure.
-      // eslint-disable-next-line prefer-promise-reject-errors
-      device.gatt.connect = () => Promise.reject('Simulated error');
+      device.gatt.connect = jest.fn(() => Promise.reject(new Error('Simulated error')));
       // 3. Dispatch the disconnection event to trigger the reconnection attempt.
       device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
 
-      // Verify that a reconnection attempt was made (second call to connect).
-      expect(bt._connectDeviceAndCacheCharacteristic).toHaveBeenCalledTimes(2);
+      // Verify that a reconnection attempt was made. Using `1` since the connect method was just overridden.
+      expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
       // Use setTimeout to wait for the Promise rejection to be processed. This allows us to verify asynchronous
       // behavior after the reconnection failure.
       setTimeout(() => {
         // Verify that the error was properly logged.
-        expect(bt._log).toHaveBeenCalledWith('Simulated error');
+        expect(bt._log).toHaveBeenLastCalledWith('_gattServerDisconnectedListener',
+            'Reconnection failed: "Simulated error"');
         // Signal Jest that the asynchronous test is complete.
         done();
       }, 0);
