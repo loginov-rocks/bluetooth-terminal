@@ -9,7 +9,14 @@ interface BluetoothTerminalOptions {
   onReceiveCallback?: (message: string) => void;
 }
 
+/**
+ * BluetoothTerminal class.
+ */
 class BluetoothTerminal {
+  // Event listeners bound to this instance to maintain the correct context.
+  private readonly _boundCharacteristicValueChangedListener: EventListenerOrEventListenerObject;
+  private readonly _boundGattServerDisconnectedListener: EventListenerOrEventListenerObject;
+
   // Private properties configurable via setters.
   private _serviceUuid: number | string = 0xFFE0;
   private _characteristicUuid: number | string = 0xFFE1;
@@ -29,13 +36,9 @@ class BluetoothTerminal {
   // Buffer that accumulates incoming characteristic value until a separator character is received.
   private _receiveBuffer: string = '';
 
-  // Event listeners bound to this instance to maintain the correct context.
-  private _boundCharacteristicValueChangedListener: EventListenerOrEventListenerObject;
-  private _boundGattServerDisconnectedListener: EventListenerOrEventListenerObject;
-
   /**
-   * Creates a BluetoothTerminal instance with the provided configuration. Supports both options object (preferred) and
-   * individual parameters (deprecated and will be removed in v2.0.0).
+   * Creates a BluetoothTerminal instance with the provided configuration.
+   * Supports both options object (preferred) and individual parameters (deprecated and will be removed in v2.0.0).
    * @param [optionsOrServiceUuid]  Optional options object or service UUID as an integer (16-bit or 32-bit) or a
    *                                  string (128-bit UUID)
    * @param [characteristicUuid]    Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit
@@ -202,7 +205,7 @@ class BluetoothTerminal {
 
   /**
    * Sets a callback that will be called after the device is fully connected and communication has started.
-   * @deprecated
+   * @deprecated Use `onConnect()` instead.
    * @param [callback] Callback for successful connection; omit or pass null/undefined to remove
    */
   public setOnConnected(callback?: (() => void) | null): void {
@@ -220,7 +223,7 @@ class BluetoothTerminal {
 
   /**
    * Sets a callback that will be called after the device is disconnected.
-   * @deprecated
+   * @deprecated Use `onDisconnect()` instead.
    * @param [callback] Callback for disconnection; omit or pass null/undefined to remove
    */
   public setOnDisconnected(callback?: (() => void) | null): void {
@@ -246,11 +249,12 @@ class BluetoothTerminal {
   }
 
   /**
-   * Opens the browser's Bluetooth device picker to select a device if none was previously selected, establishes a
-   * connection with the selected device, and initiates communication. If configured, the onConnect() callback function
-   * will execute once the connection is established.
+   * Opens the browser Bluetooth device picker to select a device if none was previously selected, establishes
+   * a connection with the selected device, and initiates communication.
+   * If configured, the `onConnect()` callback function will be executed after the connection is established.
+   * @async
    * @returns Promise that resolves when the device is fully connected and communication has started, or rejects if an
-   *   error occurs during the connection process.
+   *   error occurs.
    */
   public async connect(): Promise<void> {
     this._log('connect', 'Initiating connection process...');
@@ -265,7 +269,7 @@ class BluetoothTerminal {
         throw error;
       }
     } else {
-      this._log('connect', `Reusing previously selected device "${this.getDeviceName()}"`);
+      this._log('connect', `Connecting to previously selected device "${this.getDeviceName()}"...`);
     }
 
     // Register event listener to handle disconnection and attempt automatic reconnection.
@@ -283,9 +287,8 @@ class BluetoothTerminal {
   }
 
   /**
-   * Disconnects from the currently connected device and cleans up associated resources. If no device is connected, an
-   * error will be thrown. If configured, the onDisconnect() callback function will execute after complete
-   * disconnection.
+   * Disconnects from the currently connected device and cleans up associated resources.
+   * If configured, the `onDisconnect()` callback function will be executed after the complete disconnection.
    */
   public disconnect(): void {
     if (!this._device) {
@@ -307,23 +310,24 @@ class BluetoothTerminal {
     this._device.removeEventListener('gattserverdisconnected', this._boundGattServerDisconnectedListener);
 
     if (!this._device.gatt) {
-      throw new Error('GATT server is not available on the connected device');
+      throw new Error('GATT server is not available');
     }
 
     if (!this._device.gatt.connected) {
       this._log('disconnect', `Device "${this.getDeviceName()}" is already disconnected`);
+
       return;
     }
 
     try {
       this._device.gatt.disconnect();
     } catch (error) {
-      this._log('send', `Disconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._log('disconnect', `Disconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
 
-    this._log('disconnect', `Successfully disconnected from device "${this.getDeviceName()}"`);
+    this._log('disconnect', `Device "${this.getDeviceName()}" successfully disconnected`);
 
     this._device = null;
 
@@ -338,7 +342,7 @@ class BluetoothTerminal {
    * Handler for incoming messages received from the connected device. Override this method to process messages
    * received from the connected device. Each time a complete message (ending with the receive separator) is processed,
    * this method will be called with the message string.
-   * @deprecated
+   * @deprecated Use `onReceive()` instead.
    * @param message String message received from the connected device, with separators removed
    */
   public receive(message: string): void { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -347,10 +351,11 @@ class BluetoothTerminal {
 
   /**
    * Sends a message to the connected device, automatically adding the configured send separator and splitting the
-   * message into appropriate chunk sizes if it exceeds the maximum characteristic value size.
+   * message into appropriate chunks if it exceeds the maximum characteristic value size.
+   * @async
    * @param message String message to send to the connected device
-   * @returns Promise that resolves when all message chunks have been successfully sent, or rejects if the device is
-   *   disconnected or an error occurs during sending
+   * @returns Promise that resolves when message successfully sent, or rejects if the device is disconnected or an
+   *   error occurs.
    */
   public async send(message: string): Promise<void> {
     // Ensure message is a string, defaulting to empty string if undefined/null.
@@ -362,24 +367,29 @@ class BluetoothTerminal {
     }
 
     // Verify the communication channel before attempting to send.
-    if (!this._characteristic) {
-      throw new Error('Communication channel is not established');
+    if (!this._device || !this._characteristic) {
+      throw new Error('Device must be connected to send a message');
     }
 
     this._log('send', `Sending message: "${message}"...`);
 
-    // Append the configured separator to the message.
+    // Append the configured send separator to the message.
     message += this._sendSeparator;
 
     // Split the message into chunks according to the characteristic value size limit.
-    const chunks = BluetoothTerminal._splitByLength(message, this._characteristicValueSize);
-    this._log('send', `Message divided into ${chunks.length} chunk(s): "${chunks.join('", "')}"`);
+    const chunks = [];
+
+    for (let i = 0; i < message.length; i += this._characteristicValueSize) {
+      chunks.push(message.slice(i, i + this._characteristicValueSize));
+    }
+
+    this._log('send', `Sending in ${chunks.length} chunk${chunks.length > 1 ? 's' : ''}: "${chunks.join('", "')}"...`);
 
     try {
       // Send chunks sequentially.
       for (let i = 0; i < chunks.length; i++) {
+        this._log('send', `Sending chunk ${i + 1}/${chunks.length}: "${chunks[i]}"...`);
         await this._characteristic.writeValue(new TextEncoder().encode(chunks[i]));
-        this._log('send', `Sent chunk ${i + 1}/${chunks.length}: "${chunks[i]}"`);
       }
     } catch (error) {
       this._log('send', `Sending failed: "${error instanceof Error ? error.message : String(error)}"`);
@@ -392,7 +402,7 @@ class BluetoothTerminal {
 
   /**
    * Retrieves the name of the currently connected device.
-   * @returns Device name or an empty string if no device is connected or has no name
+   * @returns Device name or an empty string if no device is connected or has no name.
    */
   public getDeviceName(): string {
     return (this._device && this._device.name) ? this._device.name : '';
@@ -400,14 +410,15 @@ class BluetoothTerminal {
 
   /**
    * Establishes a connection to the current device, starts communication, sets up an event listener to process
-   * incoming messages, and invokes the onConnect callback if one has been configured. This method is called internally
-   * by the connect() method and the reconnection listener.
+   * incoming messages, and invokes the `onConnect()` callback if one has been configured. This method is called
+   * internally by the `connect()` method and the reconnection listener.
+   * @async
    * @returns Promise that resolves when the device is fully connected and communication has started, or rejects if an
-   *   error occurs during the connection process.
+   *   error occurs.
    */
   private async _connectDevice(): Promise<void> {
     if (!this._device) {
-      throw new Error('No device is currently connected');
+      throw new Error('Device must be selected to connect');
     }
 
     this._log('_connectDevice', `Establishing connection to device "${this.getDeviceName()}"...`);
@@ -434,13 +445,14 @@ class BluetoothTerminal {
   }
 
   /**
-   * Opens the browser's Bluetooth device picker and allows the user to select a device that supports the specified
+   * Opens the browser Bluetooth device picker and allows the user to select a device that supports the specified
    * service UUID. This method is stateless and doesn't modify any instance properties.
+   * @async
    * @param serviceUuid Service UUID
-   * @returns Promise that resolves with the selected Bluetooth device object
+   * @returns Promise that resolves with the selected Bluetooth device object.
    */
   private async _requestDevice(serviceUuid: number | string): Promise<BluetoothDevice> {
-    this._log('_requestDevice', `Opening Bluetooth device picker for service UUID "${serviceUuid}"...`);
+    this._log('_requestDevice', `Opening browser Bluetooth device picker for service UUID "${serviceUuid}"...`);
 
     let device;
     try {
@@ -451,7 +463,7 @@ class BluetoothTerminal {
       });
     } catch (error) {
       this._log('_requestDevice',
-          `Device selection failed: "${error instanceof Error ? error.message : String(error)}"`);
+          `Requesting device failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
@@ -462,19 +474,20 @@ class BluetoothTerminal {
   }
 
   /**
-   * Establishes a connection to the provided device's GATT server, retrieves the specified service, accesses the
+   * Establishes a connection to the provided device GATT server, retrieves the specified service, accesses the
    * specified characteristic, and starts notifications on that characteristic. This method is stateless and doesn't
    * modify any instance properties.
+   * @async
    * @param device Bluetooth device object
    * @param serviceUuid Service UUID
    * @param characteristicUuid Characteristic UUID
-   * @returns Promise that resolves with the Bluetooth characteristic object with notifications enabled
+   * @returns Promise that resolves with the Bluetooth characteristic object with notifications enabled.
    */
   private async _startNotifications(
       device: BluetoothDevice, serviceUuid: number | string, characteristicUuid: number | string,
   ): Promise<BluetoothRemoteGATTCharacteristic> {
     if (!device.gatt) {
-      throw new Error('GATT server is not available on the provided device');
+      throw new Error('GATT server is not available');
     }
 
     this._log('_startNotifications', 'Connecting to GATT server...');
@@ -498,7 +511,7 @@ class BluetoothTerminal {
 
   /**
    * Handles the `characteristicvaluechanged` event from the Bluetooth characteristic. Decodes incoming value,
-   * accumulates characters until a separator is encountered, then processes the complete message and invokes
+   * accumulates characters until the receive separator is encountered, then processes the complete message and invokes
    * appropriate callback.
    * @param event Event
    */
@@ -532,15 +545,15 @@ class BluetoothTerminal {
 
   /**
    * Handles the 'gattserverdisconnected' event from the Bluetooth device. This event is triggered when the connection
-   * to the GATT server is lost. The method executes any registered disconnect callback and attempts to reconnect to
-   * the device automatically.
+   * to the GATT server is lost. The method invokes the `onDisconnect()` callback if one has been configured and
+   * attempts to reconnect to the device automatically.
    * @param event Event
    */
   private _gattServerDisconnectedListener(event: Event): void {
     // `event.target` will be `BluetoothDevice` when event triggered with this listener.
     const device = event.target as BluetoothDevice;
 
-    this._log('_gattServerDisconnectedListener', `Device "${device.name}" disconnected...`);
+    this._log('_gattServerDisconnectedListener', `Device "${device.name}" was disconnected...`);
 
     if (this._onDisconnectCallback) {
       this._log('_gattServerDisconnectedListener', `Executing onDisconnect callback...`);
@@ -554,7 +567,7 @@ class BluetoothTerminal {
     this._log('_gattServerDisconnectedListener', `Attempting to reconnect to device "${this.getDeviceName()}"...`);
 
     // Using IIFE to leverage async/await while maintaining the void return type required by the event handler
-    // interface.
+    // interface. Try/catch is required here to avoid propagating the error as there is no place to catch it.
     (async () => {
       try {
         await this._connectDevice();
@@ -568,16 +581,6 @@ class BluetoothTerminal {
 
   private _log(source: string, message: string): void {
     console.log(`[BluetoothTerminal][${source}] ${message}`);
-  }
-
-  private static _splitByLength(string: string, length: number): string[] {
-    const matches = string.match(new RegExp('(.|[\r\n]){1,' + length + '}', 'g'));
-
-    if (!matches) {
-      return [];
-    }
-
-    return matches;
   }
 }
 

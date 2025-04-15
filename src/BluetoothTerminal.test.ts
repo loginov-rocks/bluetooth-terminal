@@ -54,9 +54,9 @@ describe('constructor', () => {
   });
 
   it('should accept and store custom string service UUID via options object', () => {
-    const bt = new BT({serviceUuid: '1234-5678-9ABC-DEF0'});
+    const bt = new BT({serviceUuid: '00001818-0000-1000-8000-00805f9b34fb'});
 
-    expect(bt._serviceUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._serviceUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicUuid).toBe(0xFFE1);
     expect(bt._characteristicValueSize).toBe(20);
     expect(bt._receiveSeparator).toBe('\n');
@@ -80,10 +80,10 @@ describe('constructor', () => {
   });
 
   it('should accept and store custom string characteristic UUID via options object', () => {
-    const bt = new BT({characteristicUuid: '1234-5678-9ABC-DEF0'});
+    const bt = new BT({characteristicUuid: '00001818-0000-1000-8000-00805f9b34fb'});
 
     expect(bt._serviceUuid).toBe(0xFFE0);
-    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicValueSize).toBe(20);
     expect(bt._receiveSeparator).toBe('\n');
     expect(bt._sendSeparator).toBe('\n');
@@ -179,7 +179,7 @@ describe('constructor', () => {
     const thirdCallback = () => undefined;
     const bt = new BT({
       serviceUuid: 1234,
-      characteristicUuid: '1234-5678-9ABC-DEF0',
+      characteristicUuid: '00001818-0000-1000-8000-00805f9b34fb',
       characteristicValueSize: 40,
       receiveSeparator: ';',
       sendSeparator: '!',
@@ -189,7 +189,7 @@ describe('constructor', () => {
     });
 
     expect(bt._serviceUuid).toBe(1234);
-    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicValueSize).toBe(40);
     expect(bt._receiveSeparator).toBe(';');
     expect(bt._sendSeparator).toBe('!');
@@ -207,7 +207,7 @@ describe('constructor', () => {
     const bt = new BT(
         {
           serviceUuid: 1234,
-          characteristicUuid: '1234-5678-9ABC-DEF0',
+          characteristicUuid: '00001818-0000-1000-8000-00805f9b34fb',
           characteristicValueSize: 40,
           receiveSeparator: ';',
           sendSeparator: '!',
@@ -223,7 +223,7 @@ describe('constructor', () => {
     );
 
     expect(bt._serviceUuid).toBe(1234);
-    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicValueSize).toBe(40);
     expect(bt._receiveSeparator).toBe(';');
     expect(bt._sendSeparator).toBe('!');
@@ -248,9 +248,9 @@ describe('constructor', () => {
 
   // @deprecated
   it('should accept and store custom string service UUID', () => {
-    const bt = new BT('1234-5678-9ABC-DEF0');
+    const bt = new BT('00001818-0000-1000-8000-00805f9b34fb');
 
-    expect(bt._serviceUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._serviceUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicUuid).toBe(0xFFE1);
     expect(bt._characteristicValueSize).toBe(20);
     expect(bt._receiveSeparator).toBe('\n');
@@ -276,10 +276,10 @@ describe('constructor', () => {
 
   // @deprecated
   it('should accept and store custom string characteristic UUID', () => {
-    const bt = new BT(undefined, '1234-5678-9ABC-DEF0');
+    const bt = new BT(undefined, '00001818-0000-1000-8000-00805f9b34fb');
 
     expect(bt._serviceUuid).toBe(0xFFE0);
-    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicValueSize).toBe(20);
     expect(bt._receiveSeparator).toBe('\n');
     expect(bt._sendSeparator).toBe('\n');
@@ -350,10 +350,10 @@ describe('constructor', () => {
   it('should accept and store all custom parameters provided', () => {
     const firstCallback = () => undefined;
     const secondCallback = () => undefined;
-    const bt = new BT(1234, '1234-5678-9ABC-DEF0', ';', '!', firstCallback, secondCallback);
+    const bt = new BT(1234, '00001818-0000-1000-8000-00805f9b34fb', ';', '!', firstCallback, secondCallback);
 
     expect(bt._serviceUuid).toBe(1234);
-    expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+    expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     expect(bt._characteristicValueSize).toBe(20);
     expect(bt._receiveSeparator).toBe(';');
     expect(bt._sendSeparator).toBe('!');
@@ -380,8 +380,8 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should accept and store a valid string UUID', () => {
-      bt.setServiceUuid('1234-5678-9ABC-DEF0');
-      expect(bt._serviceUuid).toBe('1234-5678-9ABC-DEF0');
+      bt.setServiceUuid('00001818-0000-1000-8000-00805f9b34fb');
+      expect(bt._serviceUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     });
 
     it('should throw an error when provided a non-integer and non-string value', () => {
@@ -410,8 +410,8 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should accept and store a valid string UUID', () => {
-      bt.setCharacteristicUuid('1234-5678-9ABC-DEF0');
-      expect(bt._characteristicUuid).toBe('1234-5678-9ABC-DEF0');
+      bt.setCharacteristicUuid('00001818-0000-1000-8000-00805f9b34fb');
+      expect(bt._characteristicUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
     });
 
     it('should throw an error when provided a non-integer and non-string value', () => {
@@ -1030,49 +1030,6 @@ describe('BluetoothTerminal', () => {
         // Signal Jest that the asynchronous test is complete.
         done();
       }, 0);
-    });
-  });
-
-  describe('_splitByLength', () => {
-    it('should keep a string shorter than the specified length as a single chunk', () => {
-      const result = BT._splitByLength('abcde', 6);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toBe('abcde');
-    });
-
-    it('should handle a string exactly matching the specified length', () => {
-      const result = BT._splitByLength('abcde', 5);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toBe('abcde');
-    });
-
-    it('should split a string into multiple chunks when longer than the specified length', () => {
-      const result = BT._splitByLength('abcde', 2);
-
-      expect(result).toHaveLength(3);
-      expect(result).toEqual(['ab', 'cd', 'e']);
-    });
-
-    it('should handle carriage returns properly when splitting', () => {
-      const result = BT._splitByLength('a\rbcde', 3);
-
-      expect(result).toHaveLength(2);
-      expect(result).toEqual(['a\rb', 'cde']);
-    });
-
-    it('should handle line feeds properly when splitting', () => {
-      const result = BT._splitByLength('abcd\ne', 3);
-
-      expect(result).toHaveLength(2);
-      expect(result).toEqual(['abc', 'd\ne']);
-    });
-
-    it('should return an empty array when given an empty string', () => {
-      const result = BT._splitByLength('', 5);
-
-      expect(result).toEqual([]);
     });
   });
 });
