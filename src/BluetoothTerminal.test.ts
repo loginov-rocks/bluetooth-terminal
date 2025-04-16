@@ -980,7 +980,7 @@ describe('BluetoothTerminal', () => {
     });
 
     it('should log reconnection errors when automatic reconnection fails', (done) => {
-      jest.spyOn(bt, '_log');
+      jest.spyOn(bt, '_logError');
 
       // Verify that connect was already called once during test setup.
       expect(device.gatt.connect).toHaveBeenCalledTimes(1);
@@ -1000,7 +1000,7 @@ describe('BluetoothTerminal', () => {
       // behavior after the reconnection failure.
       setTimeout(() => {
         // Verify that the error was properly logged.
-        expect(bt._log).toHaveBeenLastCalledWith('_gattServerDisconnectedListener',
+        expect(bt._logError).toHaveBeenLastCalledWith('_gattServerDisconnectedListener',
             'Reconnection failed: "Simulated error"');
         // Signal Jest that the asynchronous test is complete.
         done();

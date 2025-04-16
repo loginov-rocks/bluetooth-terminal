@@ -1,3 +1,7 @@
+const BLUETOOTH_TERMINAL_LOG_LEVELS = ['none', 'error', 'warn', 'info', 'log', 'debug'] as const;
+
+type BluetoothTerminalLogLevel = typeof BLUETOOTH_TERMINAL_LOG_LEVELS[number];
+
 interface BluetoothTerminalOptions {
   serviceUuid?: number | string;
   characteristicUuid?: number | string;
@@ -7,6 +11,7 @@ interface BluetoothTerminalOptions {
   onConnectCallback?: () => void;
   onDisconnectCallback?: () => void;
   onReceiveCallback?: (message: string) => void;
+  logLevel?: BluetoothTerminalLogLevel;
 }
 
 /**
@@ -26,6 +31,7 @@ class BluetoothTerminal {
   private _onConnectCallback: (() => void) | null = null;
   private _onDisconnectCallback: (() => void) | null = null;
   private _onReceiveCallback: ((message: string) => void) | null = null;
+  private _logLevel: BluetoothTerminalLogLevel = 'log';
 
   // Current Bluetooth device object.
   private _device: BluetoothDevice | null = null;
@@ -60,7 +66,7 @@ class BluetoothTerminal {
     this._boundCharacteristicValueChangedListener = this._characteristicValueChangedListener.bind(this);
     this._boundGattServerDisconnectedListener = this._gattServerDisconnectedListener.bind(this);
 
-    this._log('constructor', 'BluetoothTerminal instance initialized');
+    this._logDebug('constructor', 'BluetoothTerminal instance initialized');
 
     if (typeof optionsOrServiceUuid === 'object') {
       const options = optionsOrServiceUuid;
@@ -88,6 +94,9 @@ class BluetoothTerminal {
       }
       if (options.onReceiveCallback !== undefined) {
         this.onReceive(options.onReceiveCallback);
+      }
+      if (options.logLevel !== undefined) {
+        this.setLogLevel(options.logLevel);
       }
     } else { // @deprecated
       if (optionsOrServiceUuid !== undefined) {
@@ -130,7 +139,7 @@ class BluetoothTerminal {
     }
 
     this._serviceUuid = uuid;
-    this._log('setServiceUuid', `Service UUID set to "${uuid}"`);
+    this._logDebug('setServiceUuid', `Service UUID set to "${uuid}"`);
   }
 
   /**
@@ -152,7 +161,7 @@ class BluetoothTerminal {
     }
 
     this._characteristicUuid = uuid;
-    this._log('setCharacteristicUuid', `Characteristic UUID set to "${uuid}"`);
+    this._logDebug('setCharacteristicUuid', `Characteristic UUID set to "${uuid}"`);
   }
 
   /**
@@ -166,7 +175,7 @@ class BluetoothTerminal {
     }
 
     this._characteristicValueSize = size;
-    this._log('setCharacteristicValueSize', `Characteristic value size set to "${size}"`);
+    this._logDebug('setCharacteristicValueSize', `Characteristic value size set to "${size}"`);
   }
 
   /**
@@ -183,7 +192,7 @@ class BluetoothTerminal {
     }
 
     this._receiveSeparator = separator;
-    this._log('setReceiveSeparator', `Receive separator set to "${separator}"`);
+    this._logDebug('setReceiveSeparator', `Receive separator set to "${separator}"`);
   }
 
   /**
@@ -200,7 +209,7 @@ class BluetoothTerminal {
     }
 
     this._sendSeparator = separator;
-    this._log('setSendSeparator', `Send separator set to "${separator}"`);
+    this._logDebug('setSendSeparator', `Send separator set to "${separator}"`);
   }
 
   /**
@@ -218,7 +227,7 @@ class BluetoothTerminal {
    */
   public onConnect(callback?: (() => void) | null): void {
     this._onConnectCallback = callback || null;
-    this._log('onConnect', `onConnect callback ${this._onConnectCallback === null ? 'removed' : 'set'}`);
+    this._logDebug('onConnect', `onConnect callback ${this._onConnectCallback === null ? 'removed' : 'set'}`);
   }
 
   /**
@@ -236,7 +245,7 @@ class BluetoothTerminal {
    */
   public onDisconnect(callback?: (() => void) | null): void {
     this._onDisconnectCallback = callback || null;
-    this._log('onDisconnect', `onDisconnect callback ${this._onDisconnectCallback === null ? 'removed' : 'set'}`);
+    this._logDebug('onDisconnect', `onDisconnect callback ${this._onDisconnectCallback === null ? 'removed' : 'set'}`);
   }
 
   /**
@@ -245,7 +254,25 @@ class BluetoothTerminal {
    */
   public onReceive(callback?: ((message: string) => void) | null): void {
     this._onReceiveCallback = callback || null;
-    this._log('onReceive', `onReceive callback ${this._onReceiveCallback === null ? 'removed' : 'set'}`);
+    this._logDebug('onReceive', `onReceive callback ${this._onReceiveCallback === null ? 'removed' : 'set'}`);
+  }
+
+  /**
+   * Sets the log level that controls which messages are displayed in the console. The level hierarchy (from least to
+   * most verbose) is: "none", "error", "warn", "info", "log", "debug". Each level includes all less verbose levels.
+   * @param logLevel Log level as a string ("none", "error", "warn", "info", "log", or "debug")
+   */
+  public setLogLevel(logLevel: BluetoothTerminalLogLevel): void {
+    if (typeof logLevel !== 'string') {
+      throw new Error('Log level must be a string');
+    }
+
+    if (!BLUETOOTH_TERMINAL_LOG_LEVELS.includes(logLevel)) {
+      throw new Error(`Log level must be one of: "${BLUETOOTH_TERMINAL_LOG_LEVELS.join('", "')}"`);
+    }
+
+    this._logLevel = logLevel;
+    this._logDebug('setLogLevel', `Log level set to "${logLevel}"`);
   }
 
   /**
@@ -257,19 +284,19 @@ class BluetoothTerminal {
    *   error occurs.
    */
   public async connect(): Promise<void> {
-    this._log('connect', 'Initiating connection process...');
+    this._logInfo('connect', 'Initiating connection process...');
 
     if (!this._device) {
-      this._log('connect', 'Opening browser Bluetooth device picker...');
+      this._logInfo('connect', 'Opening browser Bluetooth device picker...');
       try {
         this._device = await this._requestDevice(this._serviceUuid);
       } catch (error) {
-        this._log('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+        this._logError('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
 
         throw error;
       }
     } else {
-      this._log('connect', `Connecting to previously selected device "${this.getDeviceName()}"...`);
+      this._logInfo('connect', `Connecting to previously selected device "${this.getDeviceName()}"...`);
     }
 
     // Register event listener to handle disconnection and attempt automatic reconnection.
@@ -278,12 +305,12 @@ class BluetoothTerminal {
     try {
       await this._connectDevice();
     } catch (error) {
-      this._log('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
 
-    this._log('connect', `Device "${this.getDeviceName()}" successfully connected`);
+    this._logInfo('connect', `Device "${this.getDeviceName()}" successfully connected`);
   }
 
   /**
@@ -292,12 +319,12 @@ class BluetoothTerminal {
    */
   public disconnect(): void {
     if (!this._device) {
-      this._log('disconnect', 'No device is currently connected');
+      this._logWarn('disconnect', 'No device is currently connected');
 
       return;
     }
 
-    this._log('disconnect', `Initiating disconnection from device "${this.getDeviceName()}"...`);
+    this._logInfo('disconnect', `Initiating disconnection from device "${this.getDeviceName()}"...`);
 
     if (this._characteristic) {
       // Stop receiving and processing incoming messages from the device.
@@ -314,7 +341,7 @@ class BluetoothTerminal {
     }
 
     if (!this._device.gatt.connected) {
-      this._log('disconnect', `Device "${this.getDeviceName()}" is already disconnected`);
+      this._logWarn('disconnect', `Device "${this.getDeviceName()}" is already disconnected`);
 
       return;
     }
@@ -322,19 +349,19 @@ class BluetoothTerminal {
     try {
       this._device.gatt.disconnect();
     } catch (error) {
-      this._log('disconnect', `Disconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('disconnect', `Disconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
 
-    this._log('disconnect', `Device "${this.getDeviceName()}" successfully disconnected`);
+    this._logInfo('disconnect', `Device "${this.getDeviceName()}" successfully disconnected`);
 
     this._device = null;
 
     if (this._onDisconnectCallback) {
-      this._log('disconnect', `Executing onDisconnect callback...`);
+      this._logDebug('disconnect', `Executing onDisconnect callback...`);
       this._onDisconnectCallback();
-      this._log('disconnect', `onDisconnect callback was executed successfully`);
+      this._logDebug('disconnect', `onDisconnect callback was executed successfully`);
     }
   }
 
@@ -371,7 +398,7 @@ class BluetoothTerminal {
       throw new Error('Device must be connected to send a message');
     }
 
-    this._log('send', `Sending message: "${message}"...`);
+    this._logDebug('send', `Sending message: "${message}"...`);
 
     // Append the configured send separator to the message.
     message += this._sendSeparator;
@@ -383,21 +410,22 @@ class BluetoothTerminal {
       chunks.push(message.slice(i, i + this._characteristicValueSize));
     }
 
-    this._log('send', `Sending in ${chunks.length} chunk${chunks.length > 1 ? 's' : ''}: "${chunks.join('", "')}"...`);
+    this._logDebug('send',
+        `Sending in ${chunks.length} chunk${chunks.length > 1 ? 's' : ''}: "${chunks.join('", "')}"...`);
 
     try {
       // Send chunks sequentially.
       for (let i = 0; i < chunks.length; i++) {
-        this._log('send', `Sending chunk ${i + 1}/${chunks.length}: "${chunks[i]}"...`);
+        this._logDebug('send', `Sending chunk ${i + 1}/${chunks.length}: "${chunks[i]}"...`);
         await this._characteristic.writeValue(new TextEncoder().encode(chunks[i]));
       }
     } catch (error) {
-      this._log('send', `Sending failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('send', `Sending failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
 
-    this._log('send', 'Message successfully sent');
+    this._logDebug('send', 'Message successfully sent');
   }
 
   /**
@@ -427,7 +455,8 @@ class BluetoothTerminal {
       this._characteristic = await this._startNotifications(this._device, this._serviceUuid,
           this._characteristicUuid);
     } catch (error) {
-      this._log('_connectDevice', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('_connectDevice',
+          `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
@@ -436,9 +465,9 @@ class BluetoothTerminal {
     this._characteristic.addEventListener('characteristicvaluechanged', this._boundCharacteristicValueChangedListener);
 
     if (this._onConnectCallback) {
-      this._log('_connectDevice', `Executing onConnect callback...`);
+      this._logDebug('_connectDevice', `Executing onConnect callback...`);
       this._onConnectCallback();
-      this._log('_connectDevice', `onConnect callback was executed successfully`);
+      this._logDebug('_connectDevice', `onConnect callback was executed successfully`);
     }
 
     this._log('_connectDevice', 'Connection established and communication started');
@@ -452,7 +481,7 @@ class BluetoothTerminal {
    * @returns Promise that resolves with the selected Bluetooth device object.
    */
   private async _requestDevice(serviceUuid: number | string): Promise<BluetoothDevice> {
-    this._log('_requestDevice', `Opening browser Bluetooth device picker for service UUID "${serviceUuid}"...`);
+    this._logDebug('_requestDevice', `Opening browser Bluetooth device picker for service UUID "${serviceUuid}"...`);
 
     let device;
     try {
@@ -462,13 +491,13 @@ class BluetoothTerminal {
         }],
       });
     } catch (error) {
-      this._log('_requestDevice',
+      this._logError('_requestDevice',
           `Requesting device failed: "${error instanceof Error ? error.message : String(error)}"`);
 
       throw error;
     }
 
-    this._log('_requestDevice', `Device "${device.name}" selected`);
+    this._logDebug('_requestDevice', `Device "${device.name}" selected`);
 
     return device;
   }
@@ -518,7 +547,7 @@ class BluetoothTerminal {
   private _characteristicValueChangedListener(event: Event): void {
     // `event.target` will be `BluetoothRemoteGATTCharacteristic` when event triggered with this listener.
     const value = new TextDecoder().decode((event.target as BluetoothRemoteGATTCharacteristic).value);
-    this._log('_characteristicValueChangedListener', `Value received: "${value}"`);
+    this._logDebug('_characteristicValueChangedListener', `Value received: "${value}"`);
 
     for (const c of value) {
       if (c === this._receiveSeparator) {
@@ -526,15 +555,15 @@ class BluetoothTerminal {
         this._receiveBuffer = '';
 
         if (message) {
-          this._log('_characteristicValueChangedListener', `Message received: "${message}"`);
+          this._logDebug('_characteristicValueChangedListener', `Message received: "${message}"`);
           // @deprecated
           this.receive(message);
 
           if (this._onReceiveCallback) {
-            this._log('_characteristicValueChangedListener',
+            this._logDebug('_characteristicValueChangedListener',
                 `Executing onReceive callback with message "${message}"...`);
             this._onReceiveCallback(message);
-            this._log('_characteristicValueChangedListener', 'onReceive callback was executed successfully');
+            this._logDebug('_characteristicValueChangedListener', 'onReceive callback was executed successfully');
           }
         }
       } else {
@@ -556,9 +585,9 @@ class BluetoothTerminal {
     this._log('_gattServerDisconnectedListener', `Device "${device.name}" was disconnected...`);
 
     if (this._onDisconnectCallback) {
-      this._log('_gattServerDisconnectedListener', `Executing onDisconnect callback...`);
+      this._logDebug('_gattServerDisconnectedListener', `Executing onDisconnect callback...`);
       this._onDisconnectCallback();
-      this._log('_gattServerDisconnectedListener', `onDisconnect callback was executed successfully`);
+      this._logDebug('_gattServerDisconnectedListener', `onDisconnect callback was executed successfully`);
     }
 
     // We don't reassign `this._device` to `device` (`event.target`) here because `this._device` _should_ already be
@@ -573,14 +602,48 @@ class BluetoothTerminal {
         await this._connectDevice();
         this._log('_gattServerDisconnectedListener', `Device "${this.getDeviceName()}" successfully reconnected`);
       } catch (error) {
-        this._log('_gattServerDisconnectedListener',
+        this._logError('_gattServerDisconnectedListener',
             `Reconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
       }
     })();
   }
 
-  private _log(source: string, message: string): void {
-    console.log(`[BluetoothTerminal][${source}] ${message}`);
+  private _logGeneric(logLevel: BluetoothTerminalLogLevel, method: string, message: string): void {
+    if (BLUETOOTH_TERMINAL_LOG_LEVELS.indexOf(this._logLevel) < BLUETOOTH_TERMINAL_LOG_LEVELS.indexOf(logLevel)) {
+      return;
+    }
+
+    const logMessage = `[BluetoothTerminal][${method}] ${message}`;
+
+    switch (logLevel) {
+      case 'debug': console.debug(logMessage); break;
+      case 'log': console.log(logMessage); break;
+      case 'info': console.info(logMessage); break;
+      case 'warn': console.warn(logMessage); break;
+      case 'error': console.error(logMessage); break;
+      default:
+        throw new Error(`Log level must be one of: "${BLUETOOTH_TERMINAL_LOG_LEVELS.join('", "')}"`);
+    }
+  }
+
+  private _logDebug(method: string, message: string): void {
+    this._logGeneric('debug', method, message);
+  }
+
+  private _log(method: string, message: string): void {
+    this._logGeneric('log', method, message);
+  }
+
+  private _logInfo(method: string, message: string): void {
+    this._logGeneric('info', method, message);
+  }
+
+  private _logWarn(method: string, message: string): void {
+    this._logGeneric('warn', method, message);
+  }
+
+  private _logError(method: string, message: string): void {
+    this._logGeneric('error', method, message);
   }
 }
 

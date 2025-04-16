@@ -223,6 +223,39 @@ Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/p
 - `npm run build:types` - build TypeScript declaration,
 - `npm run build` - clean dist directory, build code and TypeScript declaration.
 
+### Logging
+
+The logging system is implemented using simple private functions to avoid the complexity of additional classes or
+decorators. This lightweight approach reduces bundle size and maintains code readability while still providing
+comprehensive logging capabilities.
+
+#### Log Levels
+
+The class supports six hierarchical log levels (from least to most verbose):
+
+* `none` - disables all logging output,
+* `error` - only critical error messages,
+* `warn` - error messages plus warnings about unexpected but non-breaking behavior,
+* `info` - connection and disconnection status information, plus all warnings and errors,
+* `log` - detailed connection process information, plus all info-level messages,
+* `debug` - complete, verbose output of all operations, including internal method calls.
+
+#### Log Levels Implementation
+
+The following components log at specific levels throughout the class:
+
+* All errors - always logged at `error` level regardless of source,
+* Constructor, setter methods and callback function invocations - logged at `debug` level,
+* `connect()` - primary operation logged at `info` level,
+  * `_requestDevice()` - device selection logged at `debug` level,
+  * `_connectDevice()` - connection details logged at `log` level,
+    * `_startNotifications()` - GATT operations logged at `log` level,
+* `disconnect()` - primary operation logged at `info` level (unexpected conditions at `warn`),
+* `send()` - message sending logged at `debug` level,
+* `characteristicvaluechanged` event listener - message reception logged at `debug` level,
+* `gattserverdisconnected` event listener - reconnection logged at `log` level.
+
 ### TODO
 
-1. Revisit README, code comments (check private methods), tests.
+1. Improve tests.
+2. Update README.
