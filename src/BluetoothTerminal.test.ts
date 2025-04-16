@@ -1000,8 +1000,8 @@ describe('BluetoothTerminal', () => {
       // behavior after the reconnection failure.
       setTimeout(() => {
         // Verify that the error was properly logged.
-        expect(bt._logError).toHaveBeenLastCalledWith('_gattServerDisconnectedListener',
-            'Reconnection failed: "Simulated error"');
+        expect(bt._logError).toHaveBeenLastCalledWith('_gattServerDisconnectedListener', new Error('Simulated error'),
+            expect.any(Function));
         // Signal Jest that the asynchronous test is complete.
         done();
       }, 0);

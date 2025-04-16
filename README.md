@@ -257,5 +257,6 @@ The following components log at specific levels throughout the class:
 
 ### TODO
 
-1. Improve tests.
-2. Update README.
+1. Implement setter for custom logging.
+2. Improve tests.
+3. Update README.

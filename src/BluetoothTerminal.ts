@@ -1,7 +1,3 @@
-const BLUETOOTH_TERMINAL_LOG_LEVELS = ['none', 'error', 'warn', 'info', 'log', 'debug'] as const;
-
-type BluetoothTerminalLogLevel = typeof BLUETOOTH_TERMINAL_LOG_LEVELS[number];
-
 interface BluetoothTerminalOptions {
   serviceUuid?: number | string;
   characteristicUuid?: number | string;
@@ -14,10 +10,14 @@ interface BluetoothTerminalOptions {
   logLevel?: BluetoothTerminalLogLevel;
 }
 
+type BluetoothTerminalLogLevel = (typeof BluetoothTerminal)['_logLevels'][number];
+
 /**
  * BluetoothTerminal class.
  */
 class BluetoothTerminal {
+  private static readonly _logLevels = ['none', 'error', 'warn', 'info', 'log', 'debug'] as const;
+
   // Event listeners bound to this instance to maintain the correct context.
   private readonly _boundCharacteristicValueChangedListener: EventListenerOrEventListenerObject;
   private readonly _boundGattServerDisconnectedListener: EventListenerOrEventListenerObject;
@@ -267,8 +267,8 @@ class BluetoothTerminal {
       throw new Error('Log level must be a string');
     }
 
-    if (!BLUETOOTH_TERMINAL_LOG_LEVELS.includes(logLevel)) {
-      throw new Error(`Log level must be one of: "${BLUETOOTH_TERMINAL_LOG_LEVELS.join('", "')}"`);
+    if (!BluetoothTerminal._logLevels.includes(logLevel)) {
+      throw new Error(`Log level must be one of: "${BluetoothTerminal._logLevels.join('", "')}"`);
     }
 
     this._logLevel = logLevel;
@@ -291,7 +291,7 @@ class BluetoothTerminal {
       try {
         this._device = await this._requestDevice(this._serviceUuid);
       } catch (error) {
-        this._logError('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+        this._logError('connect', error, (errorMessage) => `Connection failed: "${errorMessage}"`);
 
         throw error;
       }
@@ -305,7 +305,7 @@ class BluetoothTerminal {
     try {
       await this._connectDevice();
     } catch (error) {
-      this._logError('connect', `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('connect', error, (errorMessage) => `Connection failed: "${errorMessage}"`);
 
       throw error;
     }
@@ -349,7 +349,7 @@ class BluetoothTerminal {
     try {
       this._device.gatt.disconnect();
     } catch (error) {
-      this._logError('disconnect', `Disconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('disconnect', error, (errorMessage) => `Disconnection failed: "${errorMessage}"`);
 
       throw error;
     }
@@ -420,7 +420,7 @@ class BluetoothTerminal {
         await this._characteristic.writeValue(new TextEncoder().encode(chunks[i]));
       }
     } catch (error) {
-      this._logError('send', `Sending failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('send', error, (errorMessage) => `Sending failed: "${errorMessage}"`);
 
       throw error;
     }
@@ -455,8 +455,7 @@ class BluetoothTerminal {
       this._characteristic = await this._startNotifications(this._device, this._serviceUuid,
           this._characteristicUuid);
     } catch (error) {
-      this._logError('_connectDevice',
-          `Connection failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('_connectDevice', error, (errorMessage) => `Connection failed: "${errorMessage}"`);
 
       throw error;
     }
@@ -491,8 +490,7 @@ class BluetoothTerminal {
         }],
       });
     } catch (error) {
-      this._logError('_requestDevice',
-          `Requesting device failed: "${error instanceof Error ? error.message : String(error)}"`);
+      this._logError('_requestDevice', error, (errorMessage) => `Requesting device failed: "${errorMessage}"`);
 
       throw error;
     }
@@ -602,14 +600,14 @@ class BluetoothTerminal {
         await this._connectDevice();
         this._log('_gattServerDisconnectedListener', `Device "${this.getDeviceName()}" successfully reconnected`);
       } catch (error) {
-        this._logError('_gattServerDisconnectedListener',
-            `Reconnection failed: "${error instanceof Error ? error.message : String(error)}"`);
+        this._logError('_gattServerDisconnectedListener', error,
+            (errorMessage) => `Reconnection failed: "${errorMessage}"`);
       }
     })();
   }
 
   private _logGeneric(logLevel: BluetoothTerminalLogLevel, method: string, message: string): void {
-    if (BLUETOOTH_TERMINAL_LOG_LEVELS.indexOf(this._logLevel) < BLUETOOTH_TERMINAL_LOG_LEVELS.indexOf(logLevel)) {
+    if (BluetoothTerminal._logLevels.indexOf(this._logLevel) < BluetoothTerminal._logLevels.indexOf(logLevel)) {
       return;
     }
 
@@ -622,7 +620,7 @@ class BluetoothTerminal {
       case 'warn': console.warn(logMessage); break;
       case 'error': console.error(logMessage); break;
       default:
-        throw new Error(`Log level must be one of: "${BLUETOOTH_TERMINAL_LOG_LEVELS.join('", "')}"`);
+        throw new Error(`Log level must be one of: "${BluetoothTerminal._logLevels.join('", "')}"`);
     }
   }
 
@@ -642,7 +640,10 @@ class BluetoothTerminal {
     this._logGeneric('warn', method, message);
   }
 
-  private _logError(method: string, message: string): void {
+  private _logError(method: string, error: unknown, messageConstructor: (errorMessage: string) => string): void {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const message = messageConstructor(errorMessage);
+
     this._logGeneric('error', method, message);
   }
 }
