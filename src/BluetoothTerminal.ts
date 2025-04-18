@@ -7,15 +7,24 @@ interface BluetoothTerminalOptions {
   onConnectCallback?: () => void;
   onDisconnectCallback?: () => void;
   onReceiveCallback?: (message: string) => void;
+  onLogCallback?: BluetoothTerminalOnLogCallback;
   logLevel?: BluetoothTerminalLogLevel;
 }
 
 type BluetoothTerminalLogLevel = (typeof BluetoothTerminal)['_logLevels'][number];
 
+type BluetoothTerminalOnLogCallback = (
+  logLevel: BluetoothTerminalLogLevel,
+  method: string,
+  message: string,
+  error?: unknown,
+) => void;
+
 /**
  * BluetoothTerminal class.
  */
 class BluetoothTerminal {
+  // From least to most verbose, index matters!
   private static readonly _logLevels = ['none', 'error', 'warn', 'info', 'log', 'debug'] as const;
 
   // Event listeners bound to this instance to maintain the correct context.
@@ -31,6 +40,7 @@ class BluetoothTerminal {
   private _onConnectCallback: (() => void) | null = null;
   private _onDisconnectCallback: (() => void) | null = null;
   private _onReceiveCallback: ((message: string) => void) | null = null;
+  private _onLogCallback: BluetoothTerminalOnLogCallback | null = null;
   private _logLevel: BluetoothTerminalLogLevel = 'log';
 
   // Current Bluetooth device object.
@@ -94,6 +104,9 @@ class BluetoothTerminal {
       }
       if (options.onReceiveCallback !== undefined) {
         this.onReceive(options.onReceiveCallback);
+      }
+      if (options.onLogCallback !== undefined) {
+        this.onLog(options.onLogCallback);
       }
       if (options.logLevel !== undefined) {
         this.setLogLevel(options.logLevel);
@@ -255,6 +268,16 @@ class BluetoothTerminal {
   public onReceive(callback?: ((message: string) => void) | null): void {
     this._onReceiveCallback = callback || null;
     this._logDebug('onReceive', `onReceive callback ${this._onReceiveCallback === null ? 'removed' : 'set'}`);
+  }
+
+  /**
+   * Sets a callback that will be called every time any log message is produced by the class, regardless of the log
+   * level set.
+   * @param [callback] Callback for log messages; omit or pass null/undefined to remove
+   */
+  public onLog(callback?: BluetoothTerminalOnLogCallback | null): void {
+    this._onLogCallback = callback || null;
+    this._logDebug('onLog', `onLog callback ${this._onLogCallback === null ? 'removed' : 'set'}`);
   }
 
   /**
@@ -606,7 +629,11 @@ class BluetoothTerminal {
     })();
   }
 
-  private _logGeneric(logLevel: BluetoothTerminalLogLevel, method: string, message: string): void {
+  private _logGeneric(logLevel: BluetoothTerminalLogLevel, method: string, message: string, error?: unknown): void {
+    if (this._onLogCallback) {
+      this._onLogCallback(logLevel, method, message, error);
+    }
+
     if (BluetoothTerminal._logLevels.indexOf(this._logLevel) < BluetoothTerminal._logLevels.indexOf(logLevel)) {
       return;
     }
@@ -644,7 +671,7 @@ class BluetoothTerminal {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const message = messageConstructor(errorMessage);
 
-    this._logGeneric('error', method, message);
+    this._logGeneric('error', method, message, error);
   }
 }
 

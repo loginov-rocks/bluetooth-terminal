@@ -197,11 +197,15 @@ Get the name of the currently connected device.
 
 ## Development
 
-Requires Node.js v22.
+Requires Node.js v22 (for development only).
 
-### Scripts and Dependencies
+### Runtime Dependencies
 
-Linting uses ESLint: `@eslint/js`, `eslint`, `eslint-config-google`, `eslint-plugin-jsdoc`, `typescript-eslint`.
+The class is designed to have zero runtime dependencies as it should be easily used in browser applications.
+
+### Scripts and Development Dependencies
+
+Linting uses ESLint: `@eslint/js`, `eslint`, `eslint-config-google`, `eslint-plugin-jsdoc`, `typescript-eslint`
 
 - `npm run lint`
 
@@ -209,14 +213,15 @@ TypeScript checking uses TypeScript: `typescript`.
 
 - `npm run typecheck`
 
-Testing uses Jest and Web Bluetooth Mock: `@types/jest`, `babel-jest`, `jest`, `jest-environment-jsdom`,  `web-bluetooth-mock`.
+Testing uses Jest and Web Bluetooth Mock: `@types/jest`, `babel-jest`, `jest`, `jest-environment-jsdom`, 
+`web-bluetooth-mock`
 
 - `npm test` - run tests,
 - `npm run test:coverage` - run tests with coverage,
 - `npm run coverage:clean` - clean coverage directory,
 - `npm run coverage` - clean coverage directory and run tests with coverage.
 
-Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`.
+Building uses Babel: `@babel/cli`, `@babel/core`, `@babel/preset-env`, `@babel/preset-typescript`
 
 - `npm run build:clean` - clean dist directory,
 - `npm run build:code` - build code,
@@ -257,6 +262,5 @@ The following components log at specific levels throughout the class:
 
 ### TODO
 
-1. Implement setter for custom logging.
-2. Improve tests.
-3. Update README.
+1. Improve tests.
+2. Update README.
