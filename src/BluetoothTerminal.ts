@@ -611,7 +611,7 @@ class BluetoothTerminal {
       this._logDebug('_gattServerDisconnectedListener', `onDisconnect callback was executed successfully`);
     }
 
-    // We don't reassign `this._device` to `device` (`event.target`) here because `this._device` _should_ already be
+    // `this._device` is not reassigned to `device` (`event.target`) here because `this._device` _should_ already be
     // set during the previous connection process and _should_ remain valid for reconnection.
 
     this._log('_gattServerDisconnectedListener', `Attempting to reconnect to device "${this.getDeviceName()}"...`);

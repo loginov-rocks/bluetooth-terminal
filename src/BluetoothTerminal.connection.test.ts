@@ -4,181 +4,186 @@ const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
 
 const BluetoothTerminal = require('./BluetoothTerminal');
 
+const unexpectedlyDisconnect = (device: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  // Simulate an unexpected disconnection by dispatching the corresponding Web Bluetooth API event.
+  device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
+};
+
 describe('Connection', () => {
   // Using `any` type to access private members for testing purposes. This allows for thorough testing of the internal
   // state and behavior while maintaining strong encapsulation in the production code.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let bt: any;
+  let bt: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let device: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   beforeEach(() => {
     bt = new BluetoothTerminal();
+    device = new DeviceMock('Simon', [0xFFE0]);
+    navigator.bluetooth = new WebBluetoothMock([device]);
   });
 
-  describe('connect', () => {
-    let device: typeof DeviceMock;
-
+  describe('When connecting to the device...', () => {
     beforeEach(() => {
-      device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
+      jest.spyOn(navigator.bluetooth, 'requestDevice');
       jest.spyOn(device.gatt, 'connect');
     });
 
-    it('should successfully establish a Bluetooth connection with the selected device', async () => {
+    it('should open the browser Bluetooth device picker and connect to the selected device', async () => {
       await expect(bt.connect()).resolves.toBeUndefined();
+      expect(navigator.bluetooth.requestDevice).toHaveBeenCalledTimes(1);
       expect(device.gatt.connect).toHaveBeenCalledTimes(1);
     });
 
-    it('should reuse the cached device on subsequent connections to avoid prompting the user multiple times',
-        async () => {
-          jest.spyOn(navigator.bluetooth, 'requestDevice');
-
-          await bt.connect(); // First connection should call requestDevice().
-          await bt.connect(); // Second connection should use cached device.
-
-          return expect(navigator.bluetooth.requestDevice).toHaveBeenCalledTimes(1);
-        });
-
-    it('should reject the connection promise when no device with matching service UUID is found', () => {
-      device = new DeviceMock('Simon', [1234]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
-
-      return expect(bt.connect()).rejects.toThrow();
+    it('should connect to the previously selected device on subsequent calls to avoid prompting the user multiple ' +
+      'times', async () => {
+      // The first connection should open the browser Bluetooth device picker.
+      await expect(bt.connect()).resolves.toBeUndefined();
+      // The second connection should connect to the previously selected device.
+      await expect(bt.connect()).resolves.toBeUndefined();
+      expect(navigator.bluetooth.requestDevice).toHaveBeenCalledTimes(1);
+      expect(device.gatt.connect).toHaveBeenCalledTimes(2);
     });
 
-    it('should invoke the onConnect callback exactly once after successfully establishing the connection',
-        async () => {
-          const onConnectCallback = jest.fn();
-          bt.onConnect(onConnectCallback);
+    it('should invoke the onConnect callback after connection', async () => {
+      const callback = jest.fn();
+      bt.onConnect(callback);
 
-          await bt.connect();
+      await expect(bt.connect()).resolves.toBeUndefined();
 
-          expect(onConnectCallback).toHaveBeenCalledTimes(1);
-        });
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw an error when no device with a matching service UUID is available', async () => {
+      device = new DeviceMock('Simon', [1234]);
+      navigator.bluetooth = new WebBluetoothMock([device]);
+      jest.spyOn(navigator.bluetooth, 'requestDevice');
+
+      await expect(bt.connect()).rejects.toThrow();
+      expect(navigator.bluetooth.requestDevice).toHaveBeenCalledTimes(1);
+    });
   });
 
-  describe('disconnect', () => {
-    let device: typeof DeviceMock;
-
+  describe('When disconnecting from the device...', () => {
     beforeEach(() => {
-      device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
       jest.spyOn(device.gatt, 'disconnect');
 
       return bt.connect();
     });
 
-    it('should safely disconnect only once even when disconnect() is called multiple times', () => {
+    it('should disconnect only once despite subsequent calls', () => {
       bt.disconnect();
-      bt.disconnect(); // Second call shouldn't trigger another physical disconnect.
+      bt.disconnect(); // The second call shouldn't trigger another disconnect.
 
       expect(device.gatt.disconnect).toHaveBeenCalledTimes(1);
     });
 
-    it('should avoid attempting to disconnect an already disconnected device', () => {
-      // Simulate a disconnection that happened externally by updating the Web Bluetooth API connection flag.
+    it('should invoke the onDisconnect callback after disconnection', () => {
+      const callback = jest.fn();
+      bt.onDisconnect(callback);
+
+      bt.disconnect();
+
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should avoid disconnecting when the device unexpectedly disconnects', () => {
+      // Simulate an unexpected disconnection by setting the Web Bluetooth API connection flag.
       device.gatt.connected = false;
+
       bt.disconnect();
 
       expect(device.gatt.disconnect).not.toHaveBeenCalled();
     });
-
-    it('should invoke the onDisconnect callback exactly once after successfully disconnecting the device', () => {
-      const onDisconnectCallback = jest.fn();
-      bt.onDisconnect(onDisconnectCallback);
-
-      bt.disconnect();
-
-      expect(onDisconnectCallback).toHaveBeenCalledTimes(1);
-    });
   });
 
-  describe('getDeviceName', () => {
+  describe('When the device unexpectedly disconnects...', () => {
     beforeEach(() => {
-      const device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
-    });
-
-    it('should return an empty string when no device is connected', () => {
-      expect(bt.getDeviceName()).toBe('');
-    });
-
-    it('should return the connected device name after successful connection', async () => {
-      await bt.connect();
-
-      expect(bt.getDeviceName()).toBe('Simon');
-    });
-  });
-
-  describe('_gattServerDisconnectedListener', () => {
-    let device: typeof DeviceMock;
-
-    beforeEach(() => {
-      device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
       jest.spyOn(device.gatt, 'connect');
 
       return bt.connect();
     });
 
-    it('should automatically attempt reconnection when device disconnects', () => {
+    it('should invoke the onDisconnect callback', () => {
+      const callback = jest.fn();
+      bt.onDisconnect(callback);
+
+      unexpectedlyDisconnect(device);
+
+      expect(callback).toHaveBeenCalledTimes(1);
+    });
+
+    it('should attempt to reconnect to the device', () => {
+      // Verify that connect was already called once during test setup.
       expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
-      device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
+      unexpectedlyDisconnect(device);
 
+      // Verify that a reconnection attempt was made.
       expect(device.gatt.connect).toHaveBeenCalledTimes(2);
     });
 
-    it('should log reconnection errors when automatic reconnection fails', (done) => {
+    it('should invoke the onConnect callback after reconnection', (done) => {
+      const callback = jest.fn();
+      bt.onConnect(callback);
+
+      unexpectedlyDisconnect(device);
+
+      // Using `setTimeout()` to defer verification until after the current call stack has completed. This allows the
+      // reconnection Promise chain to resolve before checking if the onConnect callback was triggered. Without this,
+      // the check can happen before the async reconnection process finishes.
+      setTimeout(() => {
+        expect(callback).toHaveBeenCalledTimes(1);
+        // Signal Jest that the asynchronous test is complete.
+        done();
+      }, 0);
+    });
+
+    it('should log an error when a reconnection attempt fails', (done) => {
       jest.spyOn(bt, '_logError');
 
       // Verify that connect was already called once during test setup.
       expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
-      // Simulate a device disconnection scenario:
-      // 1. Set the connected flag to false to mimic a disconnected state.
-      device.gatt.connected = false;
-      // 2. Override the connect method to simulate a connection failure.
+      // Mock the connect method to simulate a connection failure.
       device.gatt.connect = jest.fn(() => Promise.reject(new Error('Simulated error')));
-      // 3. Dispatch the disconnection event to trigger the reconnection attempt.
-      device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
 
-      // Verify that a reconnection attempt was made. Using `1` since the connect method was just overridden.
+      unexpectedlyDisconnect(device);
+
+      // Verify that a reconnection attempt was made. Using `1` since the connect method was just mocked.
       expect(device.gatt.connect).toHaveBeenCalledTimes(1);
 
-      // Use setTimeout to wait for the Promise rejection to be processed. This allows us to verify asynchronous
+      // Using `setTimeout()` to wait for the Promise rejection to be processed. This allows for verifying asynchronous
       // behavior after the reconnection failure.
       setTimeout(() => {
         // Verify that the error was properly logged.
-        expect(bt._logError).toHaveBeenLastCalledWith('_gattServerDisconnectedListener', new Error('Simulated error'),
-            expect.any(Function));
+        expect(bt._logError).toHaveBeenLastCalledWith(
+            '_gattServerDisconnectedListener',
+            new Error('Simulated error'),
+            expect.any(Function),
+        );
         // Signal Jest that the asynchronous test is complete.
         done();
       }, 0);
     });
+  });
 
-    it('should invoke the onDisconnect callback when device disconnection occurs', () => {
-      const onDisconnectCallback = jest.fn();
-      bt.onDisconnect(onDisconnectCallback);
-
-      device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
-
-      expect(onDisconnectCallback).toHaveBeenCalledTimes(1);
+  describe('When getting the device name...', () => {
+    it('should return an empty string when no device is connected', () => {
+      expect(bt.getDeviceName()).toBe('');
     });
 
-    it('should invoke the onConnect callback after successful automatic reconnection', (done) => {
-      const onConnectCallback = jest.fn();
-      bt.onConnect(onConnectCallback);
+    it('should return the device name after connection', async () => {
+      await bt.connect();
 
-      device.dispatchEvent(new CustomEvent('gattserverdisconnected'));
+      expect(bt.getDeviceName()).toBe('Simon');
+    });
 
-      // Use setTimeout to defer verification until after the current call stack has completed. This allows the
-      // reconnection Promise chain to resolve before we check if the onConnect callback was triggered. Without this,
-      // we might check before the async reconnection process finishes.
-      setTimeout(() => {
-        expect(onConnectCallback).toHaveBeenCalledTimes(1);
-        // Signal Jest that the asynchronous test is complete.
-        done();
-      }, 0);
+    it('should return the device name when the device unexpectedly disconnects', async () => {
+      await bt.connect();
+
+      // Simulate an unexpected disconnection by setting the Web Bluetooth API connection flag.
+      device.gatt.connected = false;
+
+      expect(bt.getDeviceName()).toBe('Simon');
     });
   });
 });

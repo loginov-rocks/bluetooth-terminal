@@ -144,6 +144,7 @@ describe('Constructor', () => {
 
   it('should accept and store a custom onConnect callback while keeping the rest of the default configuration', () => {
     const callback = () => undefined;
+
     const bt = new BluetoothTerminal({onConnectCallback: callback});
 
     expect(bt._serviceUuid).toBe(0xFFE0);
@@ -161,6 +162,7 @@ describe('Constructor', () => {
   it('should accept and store a custom onDisconnect callback while keeping the rest of the default configuration',
       () => {
         const callback = () => undefined;
+
         const bt = new BluetoothTerminal({onDisconnectCallback: callback});
 
         expect(bt._serviceUuid).toBe(0xFFE0);
@@ -177,6 +179,7 @@ describe('Constructor', () => {
 
   it('should accept and store a custom onReceive callback while keeping the rest of the default configuration', () => {
     const callback = () => undefined;
+
     const bt = new BluetoothTerminal({onReceiveCallback: callback});
 
     expect(bt._serviceUuid).toBe(0xFFE0);
@@ -193,6 +196,7 @@ describe('Constructor', () => {
 
   it('should accept and store a custom onLog callback while keeping the rest of the default configuration', () => {
     const callback = () => undefined;
+
     const bt = new BluetoothTerminal({onLogCallback: callback});
 
     expect(bt._serviceUuid).toBe(0xFFE0);
@@ -227,6 +231,7 @@ describe('Constructor', () => {
     const secondCallback = () => undefined;
     const thirdCallback = () => undefined;
     const fourthCallback = () => undefined;
+
     const bt = new BluetoothTerminal({
       serviceUuid: 1234,
       characteristicUuid: '00001818-0000-1000-8000-00805f9b34fb',
