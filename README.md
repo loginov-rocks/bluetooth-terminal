@@ -259,8 +259,3 @@ The following components log at specific levels throughout the class:
 * `send()` - message sending logged at `debug` level,
 * `characteristicvaluechanged` event listener - message reception logged at `debug` level,
 * `gattserverdisconnected` event listener - reconnection logged at `log` level.
-
-### TODO
-
-1. Improve tests.
-2. Update README.

@@ -1,32 +1,36 @@
 // Test file uses `require()` style imports because the BluetoothTerminal module is exported only as a CommonJS module.
 /* eslint-disable @typescript-eslint/no-require-imports */
+// Import the `TextEncoder` and `TextDecoder` from the Node.js `util` module and add them to the global scope. These
+// are natively available in browsers but need to be explicitly added in Node.js test environments. The
+// `BluetoothTerminal` class requires these for encoding/decoding messages sent to and received from Bluetooth devices.
 const util = require('util');
+global.TextDecoder = util.TextDecoder;
+global.TextEncoder = util.TextEncoder;
+
 const {DeviceMock, WebBluetoothMock} = require('web-bluetooth-mock');
 
 const BluetoothTerminal = require('./BluetoothTerminal');
 
-// Import the TextEncoder and TextDecoder from the Node.js util module and add them to the global scope. These are
-// natively available in browsers but need to be explicitly added in Node.js test environments. The BluetoothTerminal
-// class requires these for encoding/decoding data sent to and received from Bluetooth devices.
-global.TextDecoder = util.TextDecoder;
-global.TextEncoder = util.TextEncoder;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const changeCharacteristicValue = (bluetoothTerminal: any, value: string) => {
+  // Simulate Bluetooth characteristic value change: set value and dispatch the `characteristicvaluechanged` event to
+  // trigger the notification handler, mimicking how the Web Bluetooth API would behave when receiving data from the
+  // connected device.
+  const characteristic = bluetoothTerminal._characteristic;
+  characteristic.value = new TextEncoder().encode(value);
+  characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+};
 
 describe('Deprecated API', () => {
-  // Using `any` type to access private members for testing purposes. This allows for thorough testing of the internal
-  // state and behavior while maintaining strong encapsulation in the production code.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let bt: any;
-
-  beforeEach(() => {
-    bt = new BluetoothTerminal();
-  });
-
-  describe('constructor', () => {
-    it('should prioritize options object over legacy parameters when both are provided', () => {
+  describe('Constructor', () => {
+    it('should prioritize the options object over deprecated parameters when both are provided', () => {
       const firstCallback = () => undefined;
       const secondCallback = () => undefined;
       const thirdCallback = () => undefined;
-      const legacyCallback = () => undefined;
+      const fourthCallback = () => undefined;
+      const firstDeprecatedCallback = () => undefined;
+      const secondDeprecatedCallback = () => undefined;
+
       const bt = new BluetoothTerminal(
           {
             serviceUuid: 1234,
@@ -37,12 +41,14 @@ describe('Deprecated API', () => {
             onConnectCallback: firstCallback,
             onDisconnectCallback: secondCallback,
             onReceiveCallback: thirdCallback,
+            onLogCallback: fourthCallback,
+            logLevel: 'debug',
           },
           5678,
           '@',
           '#',
-          legacyCallback,
-          legacyCallback,
+          firstDeprecatedCallback,
+          secondDeprecatedCallback,
       );
 
       expect(bt._serviceUuid).toBe(1234);
@@ -53,35 +59,44 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBe(firstCallback);
       expect(bt._onDisconnectCallback).toBe(secondCallback);
       expect(bt._onReceiveCallback).toBe(thirdCallback);
+      expect(bt._onLogCallback).toBe(fourthCallback);
+      expect(bt._logLevel).toBe('debug');
     });
 
-    it('should accept and store custom integer service UUID', () => {
-      const bt = new BluetoothTerminal(1234);
+    it('should accept and store a custom integer service UUID while keeping the rest of the default configuration',
+        () => {
+          const bt = new BluetoothTerminal(1234);
 
-      expect(bt._serviceUuid).toBe(1234);
-      expect(bt._characteristicUuid).toBe(0xFFE1);
-      expect(bt._characteristicValueSize).toBe(20);
-      expect(bt._receiveSeparator).toBe('\n');
-      expect(bt._sendSeparator).toBe('\n');
-      expect(bt._onConnectCallback).toBeNull();
-      expect(bt._onDisconnectCallback).toBeNull();
-      expect(bt._onReceiveCallback).toBeNull();
-    });
+          expect(bt._serviceUuid).toBe(1234);
+          expect(bt._characteristicUuid).toBe(0xFFE1);
+          expect(bt._characteristicValueSize).toBe(20);
+          expect(bt._receiveSeparator).toBe('\n');
+          expect(bt._sendSeparator).toBe('\n');
+          expect(bt._onConnectCallback).toBeNull();
+          expect(bt._onDisconnectCallback).toBeNull();
+          expect(bt._onReceiveCallback).toBeNull();
+          expect(bt._onLogCallback).toBeNull();
+          expect(bt._logLevel).toBe('log');
+        });
 
-    it('should accept and store custom string service UUID', () => {
-      const bt = new BluetoothTerminal('00001818-0000-1000-8000-00805f9b34fb');
+    it('should accept and store a custom string service UUID while keeping the rest of the default configuration',
+        () => {
+          const bt = new BluetoothTerminal('00001818-0000-1000-8000-00805f9b34fb');
 
-      expect(bt._serviceUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
-      expect(bt._characteristicUuid).toBe(0xFFE1);
-      expect(bt._characteristicValueSize).toBe(20);
-      expect(bt._receiveSeparator).toBe('\n');
-      expect(bt._sendSeparator).toBe('\n');
-      expect(bt._onConnectCallback).toBeNull();
-      expect(bt._onDisconnectCallback).toBeNull();
-      expect(bt._onReceiveCallback).toBeNull();
-    });
+          expect(bt._serviceUuid).toBe('00001818-0000-1000-8000-00805f9b34fb');
+          expect(bt._characteristicUuid).toBe(0xFFE1);
+          expect(bt._characteristicValueSize).toBe(20);
+          expect(bt._receiveSeparator).toBe('\n');
+          expect(bt._sendSeparator).toBe('\n');
+          expect(bt._onConnectCallback).toBeNull();
+          expect(bt._onDisconnectCallback).toBeNull();
+          expect(bt._onReceiveCallback).toBeNull();
+          expect(bt._onLogCallback).toBeNull();
+          expect(bt._logLevel).toBe('log');
+        });
 
-    it('should accept and store custom integer characteristic UUID', () => {
+    it('should accept and store a custom integer characteristic UUID while keeping the rest of the default ' +
+      'configuration', () => {
       const bt = new BluetoothTerminal(undefined, 1234);
 
       expect(bt._serviceUuid).toBe(0xFFE0);
@@ -92,9 +107,12 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBeNull();
       expect(bt._onDisconnectCallback).toBeNull();
       expect(bt._onReceiveCallback).toBeNull();
+      expect(bt._onLogCallback).toBeNull();
+      expect(bt._logLevel).toBe('log');
     });
 
-    it('should accept and store custom string characteristic UUID', () => {
+    it('should accept and store a custom string characteristic UUID while keeping the rest of the default ' +
+      'configuration', () => {
       const bt = new BluetoothTerminal(undefined, '00001818-0000-1000-8000-00805f9b34fb');
 
       expect(bt._serviceUuid).toBe(0xFFE0);
@@ -105,9 +123,11 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBeNull();
       expect(bt._onDisconnectCallback).toBeNull();
       expect(bt._onReceiveCallback).toBeNull();
+      expect(bt._onLogCallback).toBeNull();
+      expect(bt._logLevel).toBe('log');
     });
 
-    it('should accept and store custom receive separator', () => {
+    it('should accept and store a custom receive separator while keeping the rest of the default configuration', () => {
       const bt = new BluetoothTerminal(undefined, undefined, ';');
 
       expect(bt._serviceUuid).toBe(0xFFE0);
@@ -118,9 +138,11 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBeNull();
       expect(bt._onDisconnectCallback).toBeNull();
       expect(bt._onReceiveCallback).toBeNull();
+      expect(bt._onLogCallback).toBeNull();
+      expect(bt._logLevel).toBe('log');
     });
 
-    it('should accept and store custom send separator', () => {
+    it('should accept and store a custom send separator while keeping the rest of the default configuration', () => {
       const bt = new BluetoothTerminal(undefined, undefined, undefined, ';');
 
       expect(bt._serviceUuid).toBe(0xFFE0);
@@ -131,39 +153,50 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBeNull();
       expect(bt._onDisconnectCallback).toBeNull();
       expect(bt._onReceiveCallback).toBeNull();
+      expect(bt._onLogCallback).toBeNull();
+      expect(bt._logLevel).toBe('log');
     });
 
-    it('should accept and store custom onConnect callback', () => {
-      const callback = () => undefined;
-      const bt = new BluetoothTerminal(undefined, undefined, undefined, undefined, callback);
+    it('should accept and store a custom onConnect callback while keeping the rest of the default configuration',
+        () => {
+          const callback = () => undefined;
 
-      expect(bt._serviceUuid).toBe(0xFFE0);
-      expect(bt._characteristicUuid).toBe(0xFFE1);
-      expect(bt._characteristicValueSize).toBe(20);
-      expect(bt._receiveSeparator).toBe('\n');
-      expect(bt._sendSeparator).toBe('\n');
-      expect(bt._onConnectCallback).toBe(callback);
-      expect(bt._onDisconnectCallback).toBeNull();
-      expect(bt._onReceiveCallback).toBeNull();
-    });
+          const bt = new BluetoothTerminal(undefined, undefined, undefined, undefined, callback);
 
-    it('should accept and store custom onDisconnect callback', () => {
-      const callback = () => undefined;
-      const bt = new BluetoothTerminal(undefined, undefined, undefined, undefined, undefined, callback);
+          expect(bt._serviceUuid).toBe(0xFFE0);
+          expect(bt._characteristicUuid).toBe(0xFFE1);
+          expect(bt._characteristicValueSize).toBe(20);
+          expect(bt._receiveSeparator).toBe('\n');
+          expect(bt._sendSeparator).toBe('\n');
+          expect(bt._onConnectCallback).toBe(callback);
+          expect(bt._onDisconnectCallback).toBeNull();
+          expect(bt._onReceiveCallback).toBeNull();
+          expect(bt._onLogCallback).toBeNull();
+          expect(bt._logLevel).toBe('log');
+        });
 
-      expect(bt._serviceUuid).toBe(0xFFE0);
-      expect(bt._characteristicUuid).toBe(0xFFE1);
-      expect(bt._characteristicValueSize).toBe(20);
-      expect(bt._receiveSeparator).toBe('\n');
-      expect(bt._sendSeparator).toBe('\n');
-      expect(bt._onConnectCallback).toBeNull();
-      expect(bt._onDisconnectCallback).toBe(callback);
-      expect(bt._onReceiveCallback).toBeNull();
-    });
+    it('should accept and store a custom onDisconnect callback while keeping the rest of the default configuration',
+        () => {
+          const callback = () => undefined;
+
+          const bt = new BluetoothTerminal(undefined, undefined, undefined, undefined, undefined, callback);
+
+          expect(bt._serviceUuid).toBe(0xFFE0);
+          expect(bt._characteristicUuid).toBe(0xFFE1);
+          expect(bt._characteristicValueSize).toBe(20);
+          expect(bt._receiveSeparator).toBe('\n');
+          expect(bt._sendSeparator).toBe('\n');
+          expect(bt._onConnectCallback).toBeNull();
+          expect(bt._onDisconnectCallback).toBe(callback);
+          expect(bt._onReceiveCallback).toBeNull();
+          expect(bt._onLogCallback).toBeNull();
+          expect(bt._logLevel).toBe('log');
+        });
 
     it('should accept and store all custom parameters provided', () => {
       const firstCallback = () => undefined;
       const secondCallback = () => undefined;
+
       const bt = new BluetoothTerminal(1234, '00001818-0000-1000-8000-00805f9b34fb', ';', '!', firstCallback,
           secondCallback);
 
@@ -175,134 +208,184 @@ describe('Deprecated API', () => {
       expect(bt._onConnectCallback).toBe(firstCallback);
       expect(bt._onDisconnectCallback).toBe(secondCallback);
       expect(bt._onReceiveCallback).toBeNull();
+      expect(bt._onLogCallback).toBeNull();
+      expect(bt._logLevel).toBe('log');
     });
   });
 
-  describe('setOnConnected', () => {
-    it('should store the provided callback function', () => {
-      const callback = () => undefined;
+  describe('Setters', () => {
+    // Using `any` type to access private members for testing purposes. This allows for thorough testing of the
+    // internal state and behavior while maintaining strong encapsulation in the production code.
+    let bt: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      bt.setOnConnected(callback);
-      expect(bt._onConnectCallback).toBe(callback);
-    });
-
-    it('should set null when no callback is provided', () => {
-      bt.setOnConnected();
-      expect(bt._onConnectCallback).toBeNull();
-    });
-
-    it('should set null when null is explicitly provided', () => {
-      bt.setOnConnected(null);
-      expect(bt._onConnectCallback).toBeNull();
-    });
-
-    it('should set null when undefined is explicitly provided', () => {
-      bt.setOnConnected(undefined);
-      expect(bt._onConnectCallback).toBeNull();
-    });
-
-    it('should replace a previously set callback', () => {
-      const firstCallback = () => undefined;
-      const secondCallback = () => undefined;
-
-      bt.setOnConnected(firstCallback);
-      expect(bt._onConnectCallback).toBe(firstCallback);
-
-      bt.setOnConnected(secondCallback);
-      expect(bt._onConnectCallback).toBe(secondCallback);
-    });
-  });
-
-  describe('setOnDisconnected', () => {
-    it('should store the provided callback function', () => {
-      const callback = () => undefined;
-
-      bt.setOnDisconnected(callback);
-      expect(bt._onDisconnectCallback).toBe(callback);
-    });
-
-    it('should set null when no callback is provided', () => {
-      bt.setOnDisconnected();
-      expect(bt._onDisconnectCallback).toBeNull();
-    });
-
-    it('should set null when null is explicitly provided', () => {
-      bt.setOnDisconnected(null);
-      expect(bt._onDisconnectCallback).toBeNull();
-    });
-
-    it('should set null when undefined is explicitly provided', () => {
-      bt.setOnDisconnected(undefined);
-      expect(bt._onDisconnectCallback).toBeNull();
-    });
-
-    it('should replace a previously set callback', () => {
-      const firstCallback = () => undefined;
-      const secondCallback = () => undefined;
-
-      bt.setOnDisconnected(firstCallback);
-      expect(bt._onDisconnectCallback).toBe(firstCallback);
-
-      bt.setOnDisconnected(secondCallback);
-      expect(bt._onDisconnectCallback).toBe(secondCallback);
-    });
-  });
-
-  describe('receive', () => {
     beforeEach(() => {
-      const device = new DeviceMock('Simon', [0xFFE0]);
-      navigator.bluetooth = new WebBluetoothMock([device]);
-      jest.spyOn(bt, 'receive');
-
-      return bt.connect();
+      bt = new BluetoothTerminal();
     });
 
-    it('should not process data until a separator character is received', () => {
-      // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
-      // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
-      // would behave when receiving data from a device.
-      const characteristic = bt._characteristic;
-      characteristic.value = new TextEncoder().encode('Hello, world!');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+    describe('setOnConnected', () => {
+      it('should store the provided callback function', () => {
+        const callback = () => undefined;
 
-      expect(bt.receive).not.toHaveBeenCalled();
+        bt.setOnConnected(callback);
+
+        expect(bt._onConnectCallback).toBe(callback);
+      });
+
+      it('should remove the callback when no callback is provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnConnected(callback);
+
+        expect(bt._onConnectCallback).toBe(callback);
+
+        bt.setOnConnected();
+
+        expect(bt._onConnectCallback).toBeNull();
+      });
+
+      it('should remove the callback when null is explicitly provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnConnected(callback);
+
+        expect(bt._onConnectCallback).toBe(callback);
+
+        bt.setOnConnected(null);
+
+        expect(bt._onConnectCallback).toBeNull();
+      });
+
+      it('should remove the callback when undefined is explicitly provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnConnected(callback);
+
+        expect(bt._onConnectCallback).toBe(callback);
+
+        bt.setOnConnected(undefined);
+
+        expect(bt._onConnectCallback).toBeNull();
+      });
+
+      it('should replace the previously set callback', () => {
+        const firstCallback = () => undefined;
+
+        bt.setOnConnected(firstCallback);
+
+        expect(bt._onConnectCallback).toBe(firstCallback);
+
+        const secondCallback = () => undefined;
+
+        bt.setOnConnected(secondCallback);
+
+        expect(bt._onConnectCallback).toBe(secondCallback);
+      });
     });
 
-    it('should process data once when a single separator character is received', () => {
-      // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
-      // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
-      // would behave when receiving data from a device.
-      const characteristic = bt._characteristic;
-      characteristic.value = new TextEncoder().encode('Hello, world!\n');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+    describe('setOnDisconnected', () => {
+      it('should store the provided callback function', () => {
+        const callback = () => undefined;
 
-      expect(bt.receive).toHaveBeenCalledTimes(1);
-      expect(bt.receive).toHaveBeenCalledWith('Hello, world!');
+        bt.setOnDisconnected(callback);
+
+        expect(bt._onDisconnectCallback).toBe(callback);
+      });
+
+      it('should remove the callback when no callback is provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnDisconnected(callback);
+
+        expect(bt._onDisconnectCallback).toBe(callback);
+
+        bt.setOnDisconnected();
+
+        expect(bt._onDisconnectCallback).toBeNull();
+      });
+
+      it('should remove the callback when null is explicitly provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnDisconnected(callback);
+
+        expect(bt._onDisconnectCallback).toBe(callback);
+
+        bt.setOnDisconnected(null);
+
+        expect(bt._onDisconnectCallback).toBeNull();
+      });
+
+      it('should remove the callback when undefined is explicitly provided', () => {
+        const callback = () => undefined;
+
+        bt.setOnDisconnected(callback);
+
+        expect(bt._onDisconnectCallback).toBe(callback);
+
+        bt.setOnDisconnected(undefined);
+
+        expect(bt._onDisconnectCallback).toBeNull();
+      });
+
+      it('should replace the previously set callback', () => {
+        const firstCallback = () => undefined;
+
+        bt.setOnDisconnected(firstCallback);
+
+        expect(bt._onDisconnectCallback).toBe(firstCallback);
+
+        const secondCallback = () => undefined;
+
+        bt.setOnDisconnected(secondCallback);
+
+        expect(bt._onDisconnectCallback).toBe(secondCallback);
+      });
     });
+  });
 
-    it('should process multiple data chunks when multiple separators are received', () => {
-      // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
-      // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
-      // would behave when receiving data from a device.
-      const characteristic = bt._characteristic;
-      characteristic.value = new TextEncoder().encode('Hello, world!\nCiao, mondo!\n');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+  describe('Communication', () => {
+    describe('When receiving a message...', () => {
+      // Using `any` type to access private members for testing purposes. This allows for thorough testing of the
+      // internal state and behavior while maintaining strong encapsulation in the production code.
+      let bt: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      expect(bt.receive).toHaveBeenCalledTimes(2);
-      expect(bt.receive).toHaveBeenNthCalledWith(1, 'Hello, world!');
-      expect(bt.receive).toHaveBeenNthCalledWith(2, 'Ciao, mondo!');
-    });
+      beforeEach(() => {
+        bt = new BluetoothTerminal();
+        const device = new DeviceMock('Simon', [0xFFE0]);
+        navigator.bluetooth = new WebBluetoothMock([device]);
+        jest.spyOn(bt, 'receive');
 
-    it('should process only complete data chunks when the ending separator is missing', () => {
-      // Simulate Bluetooth data reception: set the characteristic's value to test data and dispatch the
-      // `characteristicvaluechanged` event to trigger the notification handler, mimicking how the Web Bluetooth API
-      // would behave when receiving data from a device.
-      const characteristic = bt._characteristic;
-      characteristic.value = new TextEncoder().encode('Hello, world!\nCiao, mondo!');
-      characteristic.dispatchEvent(new CustomEvent('characteristicvaluechanged'));
+        return bt.connect();
+      });
 
-      expect(bt.receive).toHaveBeenCalledTimes(1);
-      expect(bt.receive).toHaveBeenCalledWith('Hello, world!');
+      it('should not invoke the receive method until the receive separator is received', () => {
+        changeCharacteristicValue(bt, 'Hello, world!');
+
+        expect(bt.receive).not.toHaveBeenCalled();
+      });
+
+      it('should invoke the receive method when data with the receive separator is received', () => {
+        changeCharacteristicValue(bt, 'Hello, world!\n');
+
+        expect(bt.receive).toHaveBeenCalledTimes(1);
+        expect(bt.receive).toHaveBeenCalledWith('Hello, world!');
+      });
+
+      it('should invoke the receive method when data with multiple receive separators is received', () => {
+        changeCharacteristicValue(bt, 'Hello, world!\nCiao, mondo!\n');
+
+        expect(bt.receive).toHaveBeenCalledTimes(2);
+        expect(bt.receive).toHaveBeenNthCalledWith(1, 'Hello, world!');
+        expect(bt.receive).toHaveBeenNthCalledWith(2, 'Ciao, mondo!');
+      });
+
+      it('should invoke the receive method only with the complete message until the receive separator is received',
+          () => {
+            changeCharacteristicValue(bt, 'Hello, world!\nCiao, mondo!');
+
+            expect(bt.receive).toHaveBeenCalledTimes(1);
+            expect(bt.receive).toHaveBeenCalledWith('Hello, world!');
+          });
     });
   });
 });
