@@ -48,41 +48,68 @@ terminal.send('Simon says: Hello, world!');
 terminal.disconnect();
 ```
 
+## Contents
+
+<!-- no toc -->
+- [API](#api)
+  - [BluetoothTerminal](#bluetoothterminal)
+    - [new BluetoothTerminal([optionsOrServiceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnectCallback], [onDisconnectCallback])](#new-bluetoothterminaloptionsorserviceuuid-characteristicuuid-receiveseparator-sendseparator-onconnectcallback-ondisconnectcallback)
+      - [BluetoothTerminalOptions](#bluetoothterminaloptions)
+    - [setServiceUuid(uuid)](#setserviceuuiduuid)
+    - [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
+    - [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
+    - [setSendSeparator(separator)](#setsendseparatorseparator)
+    - [setOnConnected([listener])](#setonconnectedlistener)
+    - [setOnDisconnected([listener])](#setondisconnectedlistener)
+    - [connect() ⇒ Promise](#connect--promise)
+    - [disconnect()](#disconnect)
+    - [receive(data)](#receivedata)
+    - [send(data) ⇒ Promise](#senddata--promise)
+    - [getDeviceName() ⇒ string](#getdevicename--string)
+- [Development](#development)
+  - [Runtime Dependencies](#runtime-dependencies)
+  - [Scripts and Development Dependencies](#scripts-and-development-dependencies)
+  - [Logging](#logging)
+    - [Log Levels](#log-levels)
+    - [Log Levels Implementation](#log-levels-implementation)
+
 ## API
 
 ### `BluetoothTerminal`
 
-Bluetooth Terminal class.
-
-<!-- no toc -->
-* [BluetoothTerminal](#bluetoothterminal)
-  * [new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnected], [onDisconnected])](#new-bluetoothterminalserviceuuid-characteristicuuid-receiveseparator-sendseparator-onconnected-ondisconnected)
-  * [setServiceUuid(uuid)](#setserviceuuiduuid)
-  * [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
-  * [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
-  * [setSendSeparator(separator)](#setsendseparatorseparator)
-  * [setOnConnected([listener])](#setonconnectedlistener)
-  * [setOnDisconnected([listener])](#setondisconnectedlistener)
-  * [connect() ⇒ Promise](#connect--promise)
-  * [disconnect()](#disconnect)
-  * [receive(data)](#receivedata)
-  * [send(data) ⇒ Promise](#senddata--promise)
-  * [getDeviceName() ⇒ string](#getdevicename--string)
+BluetoothTerminal class.
 
 ---
 
-#### `new BluetoothTerminal([serviceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnected], [onDisconnected])`
+#### `new BluetoothTerminal([optionsOrServiceUuid], [characteristicUuid], [receiveSeparator], [sendSeparator], [onConnectCallback], [onDisconnectCallback])`
 
-Create preconfigured Bluetooth Terminal instance.
+Creates a BluetoothTerminal instance with the provided configuration.
 
-| Parameter            | Type                                        | Default     | Description                                                                              |
-| -------------------- | ------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| [serviceUuid]        | `number` &#124; `string`                    | `0xFFE0`    | Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)        |
-| [characteristicUuid] | `number` &#124; `string`                    | `0xFFE1`    | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
-| [receiveSeparator]   | `string`                                    | `'\n'`      | Optional receive separator with length equal to one character                            |
-| [sendSeparator]      | `string`                                    | `'\n'`      | Optional send separator with length equal to one character                               |
-| [onConnected]        | `Function` &#124; `null` &#124; `undefined` | `undefined` | Optional callback for connection completion                                              |
-| [onDisconnected]     | `Function` &#124; `null` &#124; `undefined` | `undefined` | Optional callback for disconnection                                                      |
+Supports both options object (preferred) and individual parameters (deprecated and will be removed in v2.0.0).
+
+| Parameter              | Type                                               | Default  | Description                                                                                         |
+| ---------------------- | -------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| [optionsOrServiceUuid] | `BluetoothTerminalOptions` \| `number` \| `string` | `0xFFE0` | Optional options object or service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| [characteristicUuid]   | `number` \| `string`                               | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)            |
+| [receiveSeparator]     | `string`                                           | `'\n'`   | Optional receive separator with length equal to one character                                       |
+| [sendSeparator]        | `string`                                           | `'\n'`   | Optional send separator with length equal to one character                                          |
+| [onConnectCallback]    | `() => void`                                       | `null`   | Optional callback for successful connection                                                         |
+| [onDisconnectCallback] | `() => void`                                       | `null`   | Optional callback for disconnection                                                                 |
+
+##### `BluetoothTerminalOptions`
+
+| Property                  | Type                                                                           | Default  | Description                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| [serviceUuid]             | `number` \| `string`                                                           | `0xFFE0` | Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)        |
+| [characteristicUuid]      | `number` \| `string`                                                           | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| [characteristicValueSize] | `number`                                                                       | `20`     | Optional maximum characteristic value size in bytes (positive integer)                   |
+| [receiveSeparator]        | `string`                                                                       | `'\n'`   | Optional receive separator with length equal to one character                            |
+| [sendSeparator]           | `string`                                                                       | `'\n'`   | Optional send separator with length equal to one character                               |
+| [onConnectCallback]       | `() => void`                                                                   | `null`   | Optional callback for successful connection                                              |
+| [onDisconnectCallback]    | `() => void`                                                                   | `null`   | Optional callback for disconnection                                                      |
+| [onReceiveCallback]       | `(message: string) => void`                                                    | `null`   | Optional callback for incoming message                                                   |
+| [onLogCallback]           | `(logLevel: string, method: string, message: string, error?: unknown) => void` | `null`   | Optional callback for log messages                                                       |
+| [logLevel]                | `string`                                                                       | `'log'`  | Optional log level as a string ("none", "error", "warn", "info", "log", or "debug")      |
 
 ---
 
