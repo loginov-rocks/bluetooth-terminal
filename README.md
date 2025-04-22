@@ -57,15 +57,22 @@ terminal.disconnect();
       - [BluetoothTerminalOptions](#bluetoothterminaloptions)
     - [setServiceUuid(uuid)](#setserviceuuiduuid)
     - [setCharacteristicUuid(uuid)](#setcharacteristicuuiduuid)
+    - [setCharacteristicValueSize(size)](#setcharacteristicvaluesizesize)
     - [setReceiveSeparator(separator)](#setreceiveseparatorseparator)
     - [setSendSeparator(separator)](#setsendseparatorseparator)
-    - [setOnConnected([listener])](#setonconnectedlistener)
-    - [setOnDisconnected([listener])](#setondisconnectedlistener)
+    - [onConnect([callback])](#onconnectcallback)
+    - [onDisconnect([callback])](#ondisconnectcallback)
+    - [onReceive([callback])](#onreceivecallback)
+    - [onLog([callback])](#onlogcallback)
+    - [setLogLevel(logLevel)](#setloglevelloglevel)
     - [connect() ⇒ Promise](#connect--promise)
     - [disconnect()](#disconnect)
-    - [receive(data)](#receivedata)
-    - [send(data) ⇒ Promise](#senddata--promise)
+    - [send(message) ⇒ Promise](#sendmessage--promise)
     - [getDeviceName() ⇒ string](#getdevicename--string)
+    - [Deprecated API](#deprecated-api)
+      - [setOnConnected([callback])](#setonconnectedcallback)
+      - [setOnDisconnected([callback])](#setondisconnectedcallback)
+      - [receive(message)](#receivemessage)
 - [Development](#development)
   - [Runtime Dependencies](#runtime-dependencies)
   - [Scripts and Development Dependencies](#scripts-and-development-dependencies)
@@ -87,140 +94,208 @@ Creates a BluetoothTerminal instance with the provided configuration.
 
 Supports both options object (preferred) and individual parameters (deprecated and will be removed in v2.0.0).
 
-| Parameter              | Type                                               | Default  | Description                                                                                         |
-| ---------------------- | -------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
-| [optionsOrServiceUuid] | `BluetoothTerminalOptions` \| `number` \| `string` | `0xFFE0` | Optional options object or service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
-| [characteristicUuid]   | `number` \| `string`                               | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)            |
-| [receiveSeparator]     | `string`                                           | `'\n'`   | Optional receive separator with length equal to one character                                       |
-| [sendSeparator]        | `string`                                           | `'\n'`   | Optional send separator with length equal to one character                                          |
-| [onConnectCallback]    | `() => void`                                       | `null`   | Optional callback for successful connection                                                         |
-| [onDisconnectCallback] | `() => void`                                       | `null`   | Optional callback for disconnection                                                                 |
+| Parameter                | Type                                               | Default  | Description                                                                                         |
+| ------------------------ | -------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `[optionsOrServiceUuid]` | `BluetoothTerminalOptions` \| `number` \| `string` | `0xFFE0` | Optional options object or service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| `[characteristicUuid]`   | `number` \| `string`                               | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)            |
+| `[receiveSeparator]`     | `string`                                           | `'\n'`   | Optional receive separator with length equal to one character                                       |
+| `[sendSeparator]`        | `string`                                           | `'\n'`   | Optional send separator with length equal to one character                                          |
+| `[onConnectCallback]`    | `() => void`                                       | `null`   | Optional callback for successful connection                                                         |
+| `[onDisconnectCallback]` | `() => void`                                       | `null`   | Optional callback for disconnection                                                                 |
 
 ##### `BluetoothTerminalOptions`
 
-| Property                  | Type                                                                           | Default  | Description                                                                              |
-| ------------------------- | ------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------- |
-| [serviceUuid]             | `number` \| `string`                                                           | `0xFFE0` | Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)        |
-| [characteristicUuid]      | `number` \| `string`                                                           | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
-| [characteristicValueSize] | `number`                                                                       | `20`     | Optional maximum characteristic value size in bytes (positive integer)                   |
-| [receiveSeparator]        | `string`                                                                       | `'\n'`   | Optional receive separator with length equal to one character                            |
-| [sendSeparator]           | `string`                                                                       | `'\n'`   | Optional send separator with length equal to one character                               |
-| [onConnectCallback]       | `() => void`                                                                   | `null`   | Optional callback for successful connection                                              |
-| [onDisconnectCallback]    | `() => void`                                                                   | `null`   | Optional callback for disconnection                                                      |
-| [onReceiveCallback]       | `(message: string) => void`                                                    | `null`   | Optional callback for incoming message                                                   |
-| [onLogCallback]           | `(logLevel: string, method: string, message: string, error?: unknown) => void` | `null`   | Optional callback for log messages                                                       |
-| [logLevel]                | `string`                                                                       | `'log'`  | Optional log level as a string ("none", "error", "warn", "info", "log", or "debug")      |
+| Property                    | Type                                                                           | Default  | Description                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `[serviceUuid]`             | `number` \| `string`                                                           | `0xFFE0` | Optional service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID)        |
+| `[characteristicUuid]`      | `number` \| `string`                                                           | `0xFFE1` | Optional characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| `[characteristicValueSize]` | `number`                                                                       | `20`     | Optional maximum characteristic value size in bytes (positive integer)                   |
+| `[receiveSeparator]`        | `string`                                                                       | `'\n'`   | Optional receive separator with length equal to one character                            |
+| `[sendSeparator]`           | `string`                                                                       | `'\n'`   | Optional send separator with length equal to one character                               |
+| `[onConnectCallback]`       | `() => void`                                                                   | `null`   | Optional callback for successful connection                                              |
+| `[onDisconnectCallback]`    | `() => void`                                                                   | `null`   | Optional callback for disconnection                                                      |
+| `[onReceiveCallback]`       | `(message: string) => void`                                                    | `null`   | Optional callback for incoming message                                                   |
+| `[onLogCallback]`           | `(logLevel: string, method: string, message: string, error?: unknown) => void` | `null`   | Optional callback for log messages                                                       |
+| `[logLevel]`                | `string`                                                                       | `'log'`  | Optional log level as a string ("none", "error", "warn", "info", "log", or "debug")      |
 
 ---
 
 #### `setServiceUuid(uuid)`
 
-Set integer or string representing service UUID used.
+Sets integer or string representing service UUID used.
 
-| Parameter | Type                     | Description                                                              |
-| --------- | ------------------------ | ------------------------------------------------------------------------ |
-| uuid      | `number` &#124; `string` | Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| Parameter | Type                 | Description                                                              |
+| --------- | -------------------- | ------------------------------------------------------------------------ |
+| `uuid`    | `number` \| `string` | Service UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
 
 ---
 
 #### `setCharacteristicUuid(uuid)`
 
-Set integer or string representing characteristic UUID used.
+Sets integer or string representing characteristic UUID used.
 
-| Parameter | Type                     | Description                                                                     |
-| --------- | ------------------------ | ------------------------------------------------------------------------------- |
-| uuid      | `number` &#124; `string` | Characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+| Parameter | Type                 | Description                                                                     |
+| --------- | -------------------- | ------------------------------------------------------------------------------- |
+| `uuid`    | `number` \| `string` | Characteristic UUID as an integer (16-bit or 32-bit) or a string (128-bit UUID) |
+
+---
+
+#### `setCharacteristicValueSize(size)`
+
+Sets the maximum size (in bytes) for each characteristic write operation. Larger messages will be automatically split
+into chunks of this size.
+
+| Parameter | Type     | Description                                                   |
+| --------- | -------- | ------------------------------------------------------------- |
+| size      | `number` | Maximum characteristic value size in bytes (positive integer) |
 
 ---
 
 #### `setReceiveSeparator(separator)`
 
-Set character representing separator for data coming from the connected device, end of line for example.
+Sets character representing separator for messages received from the connected device, end of line for example.
 
-| Parameter | Type     | Description                                          |
-| --------- | -------- | ---------------------------------------------------- |
-| separator | `string` | Receive separator with length equal to one character |
+| Parameter   | Type     | Description                                          |
+| ----------- | -------- | ---------------------------------------------------- |
+| `separator` | `string` | Receive separator with length equal to one character |
 
 ---
 
 #### `setSendSeparator(separator)`
 
-Set string representing separator for data coming to the connected device, end of line for example.
+Sets character representing separator for messages sent to the connected device, end of line for example.
 
-| Parameter | Type     | Description                                       |
-| --------- | -------- | ------------------------------------------------- |
-| separator | `string` | Send separator with length equal to one character |
-
----
-
-#### `setOnConnected([listener])`
-
-Set a listener that will be called after the device is fully connected and communication has started.
-
-| Parameter  | Type                                        | Description                                                               |
-| ---------- | ------------------------------------------- | ------------------------------------------------------------------------- |
-| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for successful connection; omit or pass null/undefined to remove |
+| Parameter   | Type     | Description                                       |
+| ----------- | -------- | ------------------------------------------------- |
+| `separator` | `string` | Send separator with length equal to one character |
 
 ---
 
-#### `setOnDisconnected([listener])`
+#### `onConnect([callback])`
 
-Set a listener that will be called after the device is disconnected.
+Sets a callback that will be called after the device is fully connected and communication has started.
 
-| Parameter  | Type                                        | Description                                                       |
-| ---------- | ------------------------------------------- | ----------------------------------------------------------------- |
-| [listener] | `Function` &#124; `null` &#124; `undefined` | Callback for disconnection; omit or pass null/undefined to remove |
+| Parameter    | Type                                  | Description                                                               |
+| ------------ | ------------------------------------- | ------------------------------------------------------------------------- |
+| `[callback]` | `() => void` \| `null` \| `undefined` | Callback for successful connection; omit or pass null/undefined to remove |
+
+---
+
+#### `onDisconnect([callback])`
+
+Sets a callback that will be called after the device is disconnected.
+
+| Parameter    | Type                                  | Description                                                       |
+| ------------ | ------------------------------------- | ----------------------------------------------------------------- |
+| `[callback]` | `() => void` \| `null` \| `undefined` | Callback for disconnection; omit or pass null/undefined to remove |
+
+---
+
+#### `onReceive([callback])`
+
+Sets a callback that will be called when an incoming message from the connected device is received.
+
+| Parameter    | Type                                                 | Description                                                          |
+| ------------ | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| `[callback]` | `(message: string) => void` \| `null` \| `undefined` | Callback for incoming message; omit or pass null/undefined to remove |
+
+---
+
+#### `onLog([callback])`
+
+Sets a callback that will be called every time any log message is produced by the class, regardless of the log level
+set.
+
+| Parameter    | Type                                                                                                    | Description                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `[callback]` | `(logLevel: string, method: string, message: string, error?: unknown) => void` \| `null` \| `undefined` | Callback for log messages; omit or pass null/undefined to remove |
+
+---
+
+#### `setLogLevel(logLevel)`
+
+Sets the log level that controls which messages are displayed in the console. The level hierarchy (from least to most
+verbose) is: "none", "error", "warn", "info", "log", "debug". Each level includes all less verbose levels.
+
+| Parameter  | Type     | Description                                                                |
+| ---------- | -------- | -------------------------------------------------------------------------- |
+| `logLevel` | `string` | Log level as a string ("none", "error", "warn", "info", "log", or "debug") |
 
 ---
 
 #### `connect()` ⇒ `Promise`
 
-Launch the browser Bluetooth device picker, connect to the selected device, and start communication.
+Opens the browser Bluetooth device picker to select a device if none was previously selected, establishes a connection
+with the selected device, and initiates communication.
 
-If set, the `onConnected()` callback function will be executed after the connection starts.
+If configured, the `onConnect()` callback function will be executed after the connection is established.
 
-**Returns**: `Promise` - Promise that resolves when the device is fully connected and communication started, or rejects
-if an error occurs.
+**Returns**: `Promise` - Promise that resolves when the device is fully connected and communication has started, or
+rejects if an error occurs.
 
 ---
 
 #### `disconnect()`
 
-Disconnect from the currently connected device.
+Disconnects from the currently connected device and cleans up associated resources.
 
-If set, the `onDisconnected()` callback function will be executed after the disconnection.
-
----
-
-#### `receive(data)`
-
-Handler for incoming data from the connected device. Override this method to process data received from the connected
-device.
-
-| Parameter | Type     | Description                                    |
-| --------- | -------- | ---------------------------------------------- |
-| data      | `string` | String data received from the connected device |
+If configured, the `onDisconnect()` callback function will be executed after the complete disconnection.
 
 ---
 
-#### `send(data)` ⇒ `Promise`
+#### `send(message)` ⇒ `Promise`
 
-Send data to the connected device. The data is automatically split into chunks if it exceeds the maximum characteristic
-value length.
+Sends a message to the connected device, automatically adding the configured send separator and splitting the message
+into appropriate chunks if it exceeds the maximum characteristic value size.
 
-**Returns**: `Promise` - Promise that resolves when all data has been sent, or rejects if an error occurs
+**Returns**: `Promise` - Promise that resolves when message successfully sent, or rejects if the device is disconnected
+or an error occurs.
 
 | Parameter | Type     | Description                                    |
 | --------- | -------- | ---------------------------------------------- |
-| data      | `string` | String data to be sent to the connected device |
+| `message` | `string` | String message to send to the connected device |
 
 ---
 
 #### `getDeviceName()` ⇒ `string`
 
-Get the name of the currently connected device.
+Retrieves the name of the currently connected device.
 
-**Returns**: `string` - Name of the connected device or an empty string if no device is connected
+**Returns**: `string` - Device name or an empty string if no device is connected or has no name.
+
+---
+
+#### Deprecated API
+
+##### `setOnConnected([callback])`
+
+Sets a callback that will be called after the device is fully connected and communication has started.
+
+| Parameter    | Type                                  | Description                                                               |
+| ------------ | ------------------------------------- | ------------------------------------------------------------------------- |
+| `[callback]` | `() => void` \| `null` \| `undefined` | Callback for successful connection; omit or pass null/undefined to remove |
+
+---
+
+##### `setOnDisconnected([callback])`
+
+Sets a callback that will be called after the device is disconnected.
+
+| Parameter    | Type                                  | Description                                                       |
+| ------------ | ------------------------------------- | ----------------------------------------------------------------- |
+| `[callback]` | `() => void` \| `null` \| `undefined` | Callback for disconnection; omit or pass null/undefined to remove |
+
+---
+
+##### `receive(message)`
+
+Handler for incoming messages received from the connected device. Override this method to process messages received
+from the connected device. Each time a complete message (ending with the receive separator) is processed, this method
+will be called with the message string.
+
+| Parameter | Type     | Description                                                                |
+| --------- | -------- | -------------------------------------------------------------------------- |
+| `message` | `string` | String message received from the connected device, with separators removed |
 
 ## Development
 
