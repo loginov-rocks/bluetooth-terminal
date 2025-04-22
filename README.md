@@ -18,34 +18,55 @@ implementation details in a real life example.
 
 ### Install
 
-You can use the [script](https://github.com/loginov-rocks/bluetooth-terminal/blob/main/src/BluetoothTerminal.js)
-directly or install it using [npm](https://npmjs.com) and require in your code.
+**BluetoothTerminal** can be added to your project in two ways:
+
+1. *Direct script usage:* download and include the
+[prebuilt JavaScript file](https://www.npmjs.com/package/bluetooth-terminal?activeTab=code)
+(`dist/BluetoothTerminal.js`) directly in your HTML:
+
+```html
+<script src="path/to/BluetoothTerminal.js"></script>
+```
+
+2. *NPM package:* for projects using module bundlers (Webpack, Rollup, Parcel, etc.), install via npm:
 
 ```sh
 npm install bluetooth-terminal
 ```
 
+Then import in your code:
+
+```js
+const BluetoothTerminal = require('bluetooth-terminal');
+```
+
 ### Use
 
 ```js
-// Obtain configured instance.
-let terminal = new BluetoothTerminal();
+// Create a BluetoothTerminal instance with the default configuration.
+const bluetoothTerminal = new BluetoothTerminal();
 
-// Override `receive` method to handle incoming data as you want.
-terminal.receive = function(data) {
-  alert(data);
-};
-
-// Request the device for connection and get its name after successful connection.
-terminal.connect().then(() => {
-  alert(terminal.getDeviceName() + ' is connected!');
+// Set a callback that will be called when an incoming message from the
+// connected device is received.
+bluetoothTerminal.onReceive((message) => {
+  console.info(`Message received: "${message}"`);
 });
 
-// Send something to the connected device.
-terminal.send('Simon says: Hello, world!');
+// Open the browser Bluetooth device picker to select a device if none was
+// previously selected, establish a connection with the selected device, and
+// initiate communication.
+bluetoothTerminal.connect()
+  .then(() => {
+    // Retrieve the name of the currently connected device.
+    console.info(`Device "${this.getDeviceName()}" successfully connected`);
+    
+    // Send a message to the connected device.
+    return bluetoothTerminal.send('Simon says: Hello, world!');
+  });
 
-// Disconnect from the connected device.
-terminal.disconnect();
+// Later, disconnect from the currently connected device and clean up
+// associated resources.
+// bluetoothTerminal.disconnect();
 ```
 
 ## Contents
@@ -248,12 +269,12 @@ If configured, the `onDisconnect()` callback function will be executed after the
 Sends a message to the connected device, automatically adding the configured send separator and splitting the message
 into appropriate chunks if it exceeds the maximum characteristic value size.
 
-**Returns**: `Promise` - Promise that resolves when message successfully sent, or rejects if the device is disconnected
-or an error occurs.
-
 | Parameter | Type     | Description                                    |
 | --------- | -------- | ---------------------------------------------- |
 | `message` | `string` | String message to send to the connected device |
+
+**Returns**: `Promise` - Promise that resolves when message successfully sent, or rejects if the device is disconnected
+or an error occurs.
 
 ---
 
