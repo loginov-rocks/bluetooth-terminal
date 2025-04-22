@@ -5,14 +5,47 @@
 [![CD](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml/badge.svg)](https://github.com/loginov-rocks/bluetooth-terminal/actions/workflows/cd.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=loginov-rocks_bluetooth-terminal&metric=coverage)](https://sonarcloud.io/summary/new_code?id=loginov-rocks_bluetooth-terminal)
 
-**BluetoothTerminal** is a class written in ES6 for serial communication with Bluetooth Low Energy (Smart) devices from
-the web using [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
+**BluetoothTerminal** is a specialized JavaScript class that bridges a critical gap in web-based Bluetooth
+communication. It enables real **bidirectional serial communication** with *Bluetooth Low Energy (BLE)* devices
+directly from web browsers using the [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
 
-With this class you can **communicate bidirectionally with your own device** through the one General Attribute Profile
-characteristic that only offered by DIY modules.
+### Problem
 
-Please check out the [Web-Bluetooth-Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository to see
-implementation details in a real life example.
+Web browsers can only communicate with *Bluetooth Low Energy (4.0+)* devices through the **Web Bluetooth API**, which
+uses the *Generic Attribute Profile (GATT)* with services and characteristics. However, most affordable BLE modules
+available to hobbyists and makers (such as *HM-10*, *JDY-08*, *AT-09*, *CC41-A*) only expose a single service
+(typically `0xFFE0`) and characteristic (typically `0xFFE1`) that emulates basic serial communication.
+
+These limitations present several challenges:
+
+* No native *Serial Port Profile* support in **Web Bluetooth API**.
+* 20-byte size limit for individual BLE characteristic values.
+* Need for a consistent communication protocol between web apps and DIY hardware.
+
+### Solution
+
+This class provides a complete solution by:
+
+* Creating a robust **serial communication layer** on top of the **Web Bluetooth API**.
+* Automatically handling device discovery, connection, and reconnection.
+* Bypassing the 20-byte characteristic limitation by automatically chunking longer messages.
+* Managing message buffering until complete messages are received (using configurable delimiters).
+* Providing a simple, Promise-based API for sending and receiving data.
+
+With **BluetoothTerminal**, you can build web applications that seamlessly communicate with your custom *BLE* hardware
+by sending and receiving:
+
+* text messages,
+* JSON data from sensors,
+* commands and control signals,
+* any other data you need to exchange with your device.
+
+This enables entirely new possibilities for creating web-controlled IoT devices, remote sensors, and other
+Bluetooth-enabled projects without needing native mobile applications.
+
+Check out the [Web Bluetooth Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository for a
+complete implementation example, or read the full tutorial on
+[building web apps for your own BLE devices](https://loginov-rocks.medium.com/how-to-make-a-web-app-for-your-own-bluetooth-low-energy-device-arduino-2af8d16fdbe8).
 
 ## Quick Start
 
