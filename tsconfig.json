@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    // `moduleDetection: "force"` makes TypeScript treat every file as a separate module with its scope, even without
+    // imports/exports. This solves "Cannot redeclare block-scoped variable" errors in test files where multiple files
+    // import the same modules with the same variable names. Without this, TypeScript treats files without
+    // imports/exports as scripts sharing a global scope, causing variable conflicts across test files.
+    "moduleDetection": "force",
     "noEmit": true,
     "strict": true
   },

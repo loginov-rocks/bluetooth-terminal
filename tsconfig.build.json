@@ -2,6 +2,8 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
+    // Overriding the development configuration.
+    "moduleDetection": "auto",
     "noEmit": false,
     "outDir": "dist"
   },
