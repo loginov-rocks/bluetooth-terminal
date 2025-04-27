@@ -9,6 +9,10 @@
 communication. It enables real **bidirectional serial communication** with *Bluetooth Low Energy (BLE)* devices
 directly from web browsers using the [Web Bluetooth API](https://webbluetoothcg.github.io/web-bluetooth/).
 
+Check out the [Web Bluetooth Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository for a
+complete implementation example, or read the full tutorial on
+[building web apps for your own BLE devices](https://loginov-rocks.medium.com/how-to-make-a-web-app-for-your-own-bluetooth-low-energy-device-arduino-2af8d16fdbe8).
+
 ### Problem
 
 Web browsers can only communicate with *Bluetooth Low Energy (4.0+)* devices through the **Web Bluetooth API**, which
@@ -42,10 +46,6 @@ by sending and receiving:
 
 This enables entirely new possibilities for creating web-controlled IoT devices, remote sensors, and other
 Bluetooth-enabled projects without needing native mobile applications.
-
-Check out the [Web Bluetooth Terminal](https://github.com/loginov-rocks/Web-Bluetooth-Terminal) repository for a
-complete implementation example, or read the full tutorial on
-[building web apps for your own BLE devices](https://loginov-rocks.medium.com/how-to-make-a-web-app-for-your-own-bluetooth-low-energy-device-arduino-2af8d16fdbe8).
 
 ## Quick Start
 
